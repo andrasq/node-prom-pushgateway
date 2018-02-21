@@ -1,0 +1,9 @@
+{
+  "server": {
+    "port": 9091
+  },
+  "logs": {
+    "logDir": ".",
+    "journalName": "metrics.jrn"
+  }
+}
