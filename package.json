@@ -10,7 +10,6 @@
 
   "dependencies": {
     "config": "1.16.0",
-    "qerror": "0.2.0",
     "qfputs": "1.7.1"
   },
   "devDependencies": {

@@ -47,15 +47,6 @@ PushGateway.prototype.runServer = function runServer( callback ) {
     const Gateway = require('./lib/gateway');
     Gateway.trace('%s: Starting.', pkg.name);
 
-    const qerror = require('qerror');
-    qerror.alert = false;
-    qerror.handler = (err, callback) => {
-        const stacktrace = err && !/^SIG/.test(err.message) && err.stack || '';
-        Gateway.trace('%s: Exiting on %s', pkg.name, err, "\n", process.memoryUsage(), stacktrace);
-        callback();
-    }
-
-    this.createServer(config, (err, info) => {
     const server = this.createServer(config, (err, info) => {
         Gateway.trace('%s: Listening on %d.', pkg.name, info.port);
         if (callback) callback(err, info);
