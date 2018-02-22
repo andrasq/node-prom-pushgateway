@@ -12,7 +12,7 @@ function PushGateway( ) {
 
 PushGateway.prototype.createServer = function createServer( config, callback ) {
     const options = this._buildServerOptions(config);
-    require('./lib/app').createServer(options, (err, info) => {
+    return require('./lib/app').createServer(options, (err, info) => {
         callback(err, info);
     })
 }
@@ -56,9 +56,12 @@ PushGateway.prototype.runServer = function runServer( callback ) {
     }
 
     this.createServer(config, (err, info) => {
+    const server = this.createServer(config, (err, info) => {
         Gateway.trace('%s: Listening on %d.', pkg.name, info.port);
         if (callback) callback(err, info);
     })
+
+    return server;
 }
 
 PushGateway.prototype._buildServerOptions = function _buildServerOptions( config ) {
