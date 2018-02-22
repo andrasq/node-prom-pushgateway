@@ -34,6 +34,8 @@ PushGateway.prototype.forkServer = function forkServer( config, callback ) {
         if (msg.n === 'ready') callback(null, msg.m);
     })
 
+    // TODO: restart a crashed worker
+
     return worker;
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "fireman-pushgateway",
   "description": "kinvey prometheus push gateway",
-  "version": "0.2.0-dev",
+  "version": "0.3.0-dev",
   "keywords": [ "prometheus", "monitoring", "metrics", "kinvey" ],
   "private": "true",
   "engines": {
@@ -10,7 +10,6 @@
 
   "dependencies": {
     "config": "1.16.0",
-    "express": "4.16.2",
     "qerror": "0.2.0",
     "qfputs": "1.7.1"
   },
