@@ -9,8 +9,7 @@
   },
 
   "dependencies": {
-    "config": "1.16.0",
-    "qfputs": "1.7.1"
+    "config": "1.16.0"
   },
   "devDependencies": {
     "mocha": "3.2.0"
