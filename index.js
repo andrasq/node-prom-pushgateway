@@ -1,18 +1,33 @@
 'use strict';
 
 const path = require('path');
+const child_process = require('child_process');
+
+const serviceScriptFilename = __dirname + '/lib/service.js';
 
 module.exports = {
     createServer: function createServer( config, callback ) {
-        const journalFilename = config.journalFilename || config.logDir && config.journalName && (config.logDir + '/' + config.journalName) || null;
-        const options = {
-            port: config.port || 9091,
-            journalFilename: journalFilename,
-            labels: config.labels || {},
-        };
+        const options = buildServerOptions(config);
         require('./lib/app').createServer(options, (err, info) => {
             callback(err, info);
         })
+    },
+
+    forkServer: function forkServer( config, callback ) {
+        const options = buildServerOptions(config);
+        var worker;
+        try {
+            worker = child_process.fork(serviceScriptFilename);
+            worker.send({ n: 'createServer', m: options });
+        } catch (err) {
+            return callback(err);
+        }
+        worker.on('message', (msg) => {
+            if (!msg || !msg.n) return;
+            if (msg.n === 'error') callback(msg.m);
+            if (msg.n === 'ready') callback(null, msg.m);
+        })
+        return worker;
     },
 };
 
@@ -27,6 +42,7 @@ if (sourceFilename === process.argv[1] || path.dirname(sourceFilename) === proce
     Gateway.trace('%s: Starting.', pkg.name);
 
     const qerror = require('qerror');
+    qerror.alert = false;
     qerror.handler = (err, callback) => {
         Gateway.trace('%s: Exiting on %s', pkg.name, err);
         callback();
@@ -36,4 +52,23 @@ if (sourceFilename === process.argv[1] || path.dirname(sourceFilename) === proce
         Gateway.trace('%s: Listening on %d.', pkg.name, info.port);
         process.kill(0, 'SIGHUP');
     })
+}
+
+function buildServerOptions( config ) {
+    const journalFilename = config.journalFilename || config.logDir && config.journalName && (config.logDir + '/' + config.journalName) || null;
+    var options = {
+        port: config.port || 9091,
+        journalFilename: journalFilename,
+        labels: config.labels || {},
+    };
+    return options;
+}
+
+function sendTo( target, name, message ) {
+    if (target && target.send) {
+        try {
+            target.send({ n: name, m: message });
+        } catch (err) {
+        }
+    }
 }
