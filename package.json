@@ -4,6 +4,9 @@
   "version": "0.2.0-dev",
   "keywords": [ "prometheus", "monitoring", "metrics", "kinvey" ],
   "private": "true",
+  "engines": {
+    "node": ">=4"
+  },
 
   "dependencies": {
     "config": "1.16.0",
