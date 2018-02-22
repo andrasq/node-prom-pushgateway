@@ -3,22 +3,26 @@
 const path = require('path');
 const child_process = require('child_process');
 
-const pushGateway = new PushGateway();
-module.exports = pushGateway;
+const pushGateway = module.exports = {
+    createServer: createServer,
+    forkServer: forkServer,
+    runServer: runServer,
 
-
-function PushGateway( ) {
+    _buildServerOptions: _buildServerOptions,
 }
 
-PushGateway.prototype.createServer = function createServer( config, callback ) {
-    const options = this._buildServerOptions(config);
+
+// create a server listening for /push and /metrics requests
+function createServer( config, callback ) {
+    const options = pushGateway._buildServerOptions(config);
     return require('./lib/app').createServer(options, (err, info) => {
         callback(err, info);
     })
 }
 
-PushGateway.prototype.forkServer = function forkServer( config, callback ) {
-    const options = this._buildServerOptions(config);
+// fork a child process listening for /push and /metrics requests
+function forkServer( config, callback ) {
+    const options = pushGateway._buildServerOptions(config);
     var worker;
 
     try {
@@ -39,15 +43,15 @@ PushGateway.prototype.forkServer = function forkServer( config, callback ) {
     return worker;
 }
 
-// run this process as a standalone server
-PushGateway.prototype.runServer = function runServer( callback ) {
+// run this process as a standalone push gateway server
+function runServer( callback ) {
     const pkg = require('./package');
     const config = require('config');
 
     const Gateway = require('./lib/gateway');
     Gateway.trace('%s: Starting.', pkg.name);
 
-    const server = this.createServer(config, (err, info) => {
+    const server = pushGateway.createServer(config, (err, info) => {
         Gateway.trace('%s: Listening on %d.', pkg.name, info.port);
         if (callback) callback(err, info);
     })
@@ -55,7 +59,7 @@ PushGateway.prototype.runServer = function runServer( callback ) {
     return server;
 }
 
-PushGateway.prototype._buildServerOptions = function _buildServerOptions( config ) {
+function _buildServerOptions( config ) {
     var options = {
         port: config.port || 9091,
         journalFilename: config.journalFilename
@@ -65,8 +69,6 @@ PushGateway.prototype._buildServerOptions = function _buildServerOptions( config
     };
     return options;
 }
-
-PushGateway.prototype = PushGateway.prototype;
 
 
 const scriptPath = require.resolve(__filename);
