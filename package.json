@@ -12,11 +12,11 @@
     "config": "1.16.0"
   },
   "devDependencies": {
-    "mocha": "3.2.0"
+    "qnit": "0.21.1"
   },
   "scripts": {
-    "test": "mocha test",
-    "coverage": "myc --reporter lcov --reporter text npm test",
+    "test": "qnit test",
+    "coverage": "nyc --reporter lcov --reporter text npm test",
     "clean": "rm -rf .nyc_output/ coverage/"
   }
 }
