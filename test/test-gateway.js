@@ -219,28 +219,26 @@ module.exports = {
             })
         },
 
-        'should attach configured labels to metrics': function(t) {
-t.skip();
-        },
-
         'should report previous values': function(t) {
             const gw = this.gw;
             gw.ingestMetrics('metric1 1 1500000001000\n', function(err) {
                 t.ifError(err);
                 const report1 = gw.reportMetrics();
-console.log("AR:", report1, gw);
                 gw.ingestMetrics('metric2 2 1500000002000\n', function(err) {
                     t.ifError(err);
                     const report2 = gw.reportMetrics();
                     t.equal(report1.length, 1);
                     t.contains(report1[0], 'metric1 1');
-console.log("AR:", report2, gw);
                     t.equal(report2.length, 2);
                     t.contains(report2[0], 'metric1 1');
                     t.contains(report2[1], 'metric2 2');
                     t.done();
                 })
             })
+        },
+
+        'should attach configured labels to metrics': function(t) {
+t.skip();
         },
     },
 }
