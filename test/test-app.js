@@ -163,11 +163,11 @@ module.exports = {
             t.done();
         },
 
-        'POST /push should call gateway.uploadMetrics': function(t) {
+        'POST /push should call gateway.ingestMetrics': function(t) {
             this.req.url = '/push';
             this.req.method = 'POST';
             app.processRequest(this.req, this.res, 'metric1 1\nmetric2 2\n', this.gateway);
-            t.deepEqual(this.gateway.calls, [ ['uploadMetrics', 'metric1 1\nmetric2 2\n'] ]);
+            t.deepEqual(this.gateway.calls, [ ['ingestMetrics', 'metric1 1\nmetric2 2\n'] ]);
             t.done();
         },
 
@@ -216,8 +216,8 @@ function MockGateway( ) {
         this.calls.push(['reportMetrics']);
         return [ "metric1 1 2111111111", "metric2 2 2111111111" ];
     }
-    this.uploadMetrics = function(body, cb) {
-        this.calls.push(['uploadMetrics', body]);
+    this.ingestMetrics = function(body, cb) {
+        this.calls.push(['ingestMetrics', body]);
         cb();
     }
 }
