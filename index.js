@@ -6,7 +6,6 @@ const child_process = require('child_process');
 const pushGateway = module.exports = {
     createServer: createServer,
     forkServer: forkServer,
-    runServer: runServer,
 
     _buildServerOptions: _buildServerOptions,
 }
@@ -15,24 +14,30 @@ const pushGateway = module.exports = {
 // create a server listening for /push and /metrics requests
 function createServer( config, callback ) {
     const options = pushGateway._buildServerOptions(config);
-    return require('./lib/app').createServer(options, (err, info) => {
-        callback(err, info);
+    const pkg = require('./package');
+
+    const Gateway = require('./lib/gateway');
+    if (options.verbose) Gateway.trace('%s: Starting, pid #%d.', pkg.name, process.pid);
+
+    const server = require('./lib/app').createServer(options, (err, info) => {
+        if (options.verbose) Gateway.trace('%s: Listening on %d, pid #%d.', pkg.name, options.port, process.pid);
+        if (callback) callback(err, info);
     })
+
+    return server;
 }
 
-// fork a child process listening for /push and /metrics requests
+// fork a child process and have it become the server
 function forkServer( config, callback ) {
     const options = pushGateway._buildServerOptions(config);
-    var worker;
-
     try {
-        worker = child_process.fork(__dirname + '/lib/service.js');
+        var worker = child_process.fork(__dirname + '/lib/service.js');
         worker.send({ n: 'createServer', m: options });
     } catch (err) {
         return callback(err);
     }
 
-    worker.on('message', (msg) => {
+    worker.once('message', (msg) => {
         if (!msg || !msg.n) return;
         if (msg.n === 'error') callback(msg.m);
         if (msg.n === 'ready') callback(null, msg.m);
@@ -43,22 +48,6 @@ function forkServer( config, callback ) {
     return worker;
 }
 
-// run this process as a standalone push gateway server
-function runServer( callback ) {
-    const pkg = require('./package');
-    const config = require('config');
-
-    const Gateway = require('./lib/gateway');
-    Gateway.trace('%s: Starting.', pkg.name);
-
-    const server = pushGateway.createServer(config, (err, info) => {
-        Gateway.trace('%s: Listening on %d.', pkg.name, info.port);
-        if (callback) callback(err, info);
-    })
-
-    return server;
-}
-
 function _buildServerOptions( config ) {
     var options = {
         port: config.port || 9091,
@@ -66,16 +55,17 @@ function _buildServerOptions( config ) {
             || config.logDir && config.journalName && (config.logDir + '/' + config.journalName)
             || null,
         labels: config.labels || {},
+        verbose: config.verbose,
     };
     return options;
 }
 
 
-const scriptPath = require.resolve(__filename);
-if (process.argv[1] === scriptPath || process.argv[1] === path.dirname(scriptPath)) {
-    // if loaded directly, start the service
-    pushGateway.runServer();
+if (process.argv[1] === __filename || process.argv[1] === __dirname) {
+    // if run directly eg `node .`, become the service
+    const config = require('config');
+    pushGateway.createServer(config);
 }
 else {
-    // if loaded as part of another script, just export the singleton
+    // if loaded as part of another script eg `require()`, just export the functions
 }
