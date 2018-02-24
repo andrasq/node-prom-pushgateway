@@ -29,6 +29,7 @@ function createServer( config, callback ) {
 
 // fork a child process and have it become the server
 function forkServer( config, callback ) {
+    callback = callback || function(){};
     const options = pushGateway._buildServerOptions(config);
     try {
         var worker = child_process.fork(__dirname + '/lib/service.js');
