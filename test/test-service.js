@@ -89,6 +89,7 @@ module.exports = {
         unrequire('../lib/service.js');
         require('../lib/service.js');
 
+        process.emit('message', { n: 'createServer', m: { timeout: 1 } });
         process.emit('disconnect');
         setTimeout(function() {
             t.ok(spyKill.called);
