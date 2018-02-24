@@ -41,6 +41,9 @@ Config
 - `labels` - hash of labels to add to reported metrics, default `{}` none
 - `verbose` - whether to log service start/stop messages, default false.
 
+Other confi settings are ignored.
+
+
 Http Api
 --------
 

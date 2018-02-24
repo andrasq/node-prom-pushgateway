@@ -16,9 +16,8 @@ module.exports = {
         const spySend = t.stubOnce(process, 'send', function(m) { message = m });
         const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
 
-        unrequire('../lib/service.js');
-        require('../lib/service.js');
-        // FIXME: require.resolve('../lib/service.js') here throws "cannot find module"
+        unrequire('../lib/service-worker.js');
+        require('../lib/service-worker.js');
         process.emit('message', { n: 'createServer', m: { port: 13337 } });
 
         setTimeout(function() {
@@ -35,8 +34,8 @@ module.exports = {
         const spySend = t.stub(process, 'send', function(m) { message = m });
         const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
 
-        unrequire('../lib/service.js');
-        require('../lib/service.js');
+        unrequire('../lib/service-worker.js');
+        require('../lib/service-worker.js');
         process.emit('message');
         process.emit('message', {});
         process.emit('message', { n: 'some other message' });
@@ -56,8 +55,8 @@ module.exports = {
         const spySend = t.stubOnce(process, 'send', function(m) { message = m });
         const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(error) });
 
-        unrequire('../lib/service.js');
-        require('../lib/service.js');
+        unrequire('../lib/service-worker.js');
+        require('../lib/service-worker.js');
         process.emit('message', { n: 'createServer', m: { port: 13337 } });
 
         setTimeout(function() {
@@ -72,8 +71,8 @@ module.exports = {
         const spySend = t.stubOnce(process, 'send', function(m) { message = m });
         const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { throw error });
 
-        unrequire('../lib/service.js');
-        require('../lib/service.js');
+        unrequire('../lib/service-worker.js');
+        require('../lib/service-worker.js');
         process.emit('message', { n: 'createServer', m: { port: 13337 } });
 
         setTimeout(function() {
@@ -86,8 +85,8 @@ module.exports = {
         const spyKill = t.stubOnce(process, 'kill');
         const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
 
-        unrequire('../lib/service.js');
-        require('../lib/service.js');
+        unrequire('../lib/service-worker.js');
+        require('../lib/service-worker.js');
 
         process.emit('message', { n: 'createServer', m: { timeout: 1 } });
         process.emit('disconnect');
