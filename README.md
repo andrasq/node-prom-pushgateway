@@ -54,7 +54,7 @@ The gateway listens on the configured port (default 9091) for http requests.
 
 ### GET /healthcheck
 
-Returns 200 OK status code and "OK" body, just confirm that the service is up.
+Returns 200 OK status code and "OK" body, just to confirm that the service is up.
 
 ### POST /push
 
