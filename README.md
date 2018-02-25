@@ -33,18 +33,18 @@ process id to the `callback`.
 
 ### gw.forkServer( config, [callback] )
 
-Create a child process running `createServer`.  This decouples the gateway from the
-event loop of the application.
-
+Run `createServer` in a child process, and return its port and pid back to the parent.
+This decouples the gateway from the event loop of the application.  The child will
+exit soon after the parent exits.
 
 Config
 ------
 
 - `port` - port to listen on, default 9091 (same as prometheus-pushgateway)
-- `labels` - hash of labels to add to reported metrics, default `{}` none
+- `labels` - hash of labels to add to reported metrics, default `{}` none (TBD)
 - `verbose` - whether to log service start/stop messages, default false.
 
-Other confi settings are ignored.
+Other config settings are ignored.
 
 
 Http Api
@@ -87,4 +87,5 @@ Todo
 - checkpoint metrics into a local journal (to back up the in-memory copy).
   Load journal on start, empty when scraped.
 - report metrics with a configurable separation gap to not split clusters of points
-- create /push/stackdriver to accept metrics in legacy Stackdriver format
+- write `/push/stackdriver` to accept metrics in legacy Stackdriver format
+- implement `config.labels` support
