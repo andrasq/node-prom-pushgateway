@@ -52,13 +52,13 @@ Http Api
 
 The gateway listens on the configured port (default 9091) for http requests.
 
-### /healthcheck
+### GET /healthcheck
 
 Returns 200 OK status code and "OK" body, just confirm that the service is up.
 
-### /push
+### POST /push
 
-Push prometheus-pushgateway style stats to the gateway to be scrapable by prometheus.
+Push prometheus-pushgateway style stats to the gateway to be scrapable by Prometheus.
 The stats are cached until collected by calling /metrics.
 
     curl --data-binary @- << EOF http://localhots:9091/push
@@ -66,9 +66,28 @@ The stats are cached until collected by calling /metrics.
     metric2 12.5
     EOF
 
-### /metrics
+### POST /push/stackdriver
 
-Endpoint used by prometheus to scrape stats.
+Push legacy Stackdriver-style stats to the gateway to be scraped by Prometheus.
+
+    curl --data-binary @- << EOF http://localhost:9091/push/stackdriver
+    { "timestamp":1519534800,
+      "proto_version":1,
+      "data":[
+        {"name":"metric1","value":1.5,"collected_at":1519534800,"instance":"i-001234"},
+        {"name":"metric2","value":2.5,"collected_at":1519534800}
+      ]
+    }
+    EOF
+    // => Published
+
+    curl http://localhost:9091/metrics
+    metric2 2.5 1519534800000
+    metric1{instance="i-001234"} 1.5 1519534800000
+
+### GET /metrics
+
+Endpoint used by Prometheus to scrape stats.
 
     curl -v http://localhost:9091/metrics
     < HTTP/1.1 200 OK
@@ -87,5 +106,4 @@ Todo
 - checkpoint metrics into a local journal (to back up the in-memory copy).
   Load journal on start, empty when scraped.
 - report metrics with a configurable separation gap to not split clusters of points
-- write `/push/stackdriver` to accept metrics in legacy Stackdriver format
 - implement `config.labels` support

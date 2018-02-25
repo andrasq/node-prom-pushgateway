@@ -91,6 +91,41 @@ module.exports = {
         },
     },
 
+    'ingestMetricsStackdriver': {
+        'should throw on wrong protocol': function(t) {
+            const gw = this.gw;
+            const metrics = {
+                timestamp: 2000000001,
+                proto_version: 2,
+                data: [
+                    { name: 'metric1', value: 1, collected_at: 1234 },
+                ]
+            };
+            t.throws(function(){ gw.ingestMetricsStackdriver(JSON.stringify(metrics), function(){}) }, /unsupported.* proto_version/);
+            t.done();
+        },
+
+        'should convert and ingest metrics, retaining instance name': function(t) {
+            const gw = this.gw;
+            const metrics = {
+                timestamp: 2111111111,
+                proto_version: 1,
+                data: [
+                    { name: 'metric1', value: 1.5, collected_at: 1234, instance: 'i-000123' },
+                    { name: 'metric2', value: 2.5, collected_at: 1235 },
+                    { name: 'metric3', value: NaN },
+                ]
+            };
+            gw.ingestMetricsStackdriver(JSON.stringify(metrics), function(err) {
+                t.equal(gw.samples.length, 3);
+                t.deepEqual(gw.samples[0], { id: 'metric1{instance="i-000123"}', name: 'metric1', value: '1.5', ts: '1234000', labels: 'instance="i-000123"' });
+                t.deepEqual(gw.samples[1], { id: 'metric2', name: 'metric2', value: '2.5', ts: '1235000', labels: '' });
+                t.deepEqual(gw.samples[2], { id: 'metric3', name: 'metric3', value: 'NaN', ts: '2111111111000', labels: '' });
+                t.done();
+            })
+        },
+    },
+
     'parseMetricsLines': {
         beforeEach: function(done) {
             this.lines = (

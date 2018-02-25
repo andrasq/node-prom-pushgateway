@@ -171,6 +171,17 @@ module.exports = {
             t.done();
         },
 
+        'POST /push/stackdriver should call gateway.ingestMetricsStackdriver': function(t) {
+            this.req.url = '/push/stackdriver';
+            this.req.method = 'POST';
+            const postData = JSON.stringify({ timestamp: 2000000001, proto_version: 1, data: [ { name: 'foo', value: 1 } ] });
+            app.processRequest(this.req, this.res, postData, this.gateway);
+            t.deepEqual(this.gateway.calls, [ ['ingestMetricsStackdriver', postData] ]);
+            t.deepEqual(this.res.calls[0], ['writeHead', 200, undefined]);
+            t.deepEqual(this.res.calls[1], ['end', 'Published']);
+            t.done();
+        },
+
         'should throw 404 HttpError if call not routed': function(t) {
             this.req.url = '/notRouted';
             const self = this;
@@ -218,6 +229,10 @@ function MockGateway( ) {
     }
     this.ingestMetrics = function(body, cb) {
         this.calls.push(['ingestMetrics', body]);
+        cb();
+    }
+    this.ingestMetricsStackdriver = function(body, cb) {
+        this.calls.push(['ingestMetricsStackdriver', body]);
         cb();
     }
 }
