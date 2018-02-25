@@ -58,19 +58,23 @@ Returns 200 OK status code and "OK" body, just to confirm that the service is up
 
 ### POST /push
 
-Push prometheus-pushgateway style stats to the gateway to be scrapable by Prometheus.
-The stats are cached until collected by calling /metrics.
+Push prometheus-pushgateway format stats to the gateway to be scraped by Prometheus.
+The stats are cached until collected by a call to /metrics.
 
-    curl --data-binary @- << EOF http://localhots:9091/push
+    $ curl --data-binary @- << EOF http://localhots:9091/push
     metric1 11.5
     metric2{host="host-name"} 12.5
     EOF
 
+    $ curl http://localhost:9091/metrics
+    metric1 11.5 1519998877123
+    metric2{host="host-name"} 2.5 1519998877123
+
 ### POST /push/stackdriver
 
-Push legacy Stackdriver-style stats to the gateway to be scraped by Prometheus.
+Push legacy-Stackdriver format stats to the gateway to be scraped by Prometheus.
 
-    curl --data-binary @- << EOF http://localhost:9091/push/stackdriver
+    $ curl --data-binary @- << EOF http://localhost:9091/push/stackdriver
     { "timestamp":1519534800,
       "proto_version":1,
       "data":[
@@ -81,15 +85,18 @@ Push legacy Stackdriver-style stats to the gateway to be scraped by Prometheus.
     EOF
     // => Published
 
-    curl http://localhost:9091/metrics
+    $ curl http://localhost:9091/metrics
     metric1{instance="i-001234"} 1.5 1519534800000
     metric2 2.5 1519534800000
 
 ### GET /metrics
 
-Endpoint used by Prometheus to scrape stats.
+Endpoint used by Prometheus to scrape stats.  The cached stats are aggregated when reported
+(averaged, with the most recent timestamp).  Each call to /metrics will report all known metrics,
+whether or not new samples have been pushed since the last call.  If no new samples arrived, the
+last reported values are sent again.
 
-    curl -v http://localhost:9091/metrics
+    $ curl -v http://localhost:9091/metrics
     < HTTP/1.1 200 OK
     < Content-Type: text/plain
     < Date: Sat, 24 Feb 2018 19:28:16 GMT
