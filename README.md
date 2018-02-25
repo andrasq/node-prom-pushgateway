@@ -63,7 +63,7 @@ The stats are cached until collected by calling /metrics.
 
     curl --data-binary @- << EOF http://localhots:9091/push
     metric1 11.5
-    metric2 12.5
+    metric2{host="host-name"} 12.5
     EOF
 
 ### POST /push/stackdriver
@@ -82,8 +82,8 @@ Push legacy Stackdriver-style stats to the gateway to be scraped by Prometheus.
     // => Published
 
     curl http://localhost:9091/metrics
-    metric2 2.5 1519534800000
     metric1{instance="i-001234"} 1.5 1519534800000
+    metric2 2.5 1519534800000
 
 ### GET /metrics
 
@@ -96,8 +96,8 @@ Endpoint used by Prometheus to scrape stats.
     < Connection: keep-alive
     < Transfer-Encoding: chunked
     <
-    metric2 12.5 1519500493638
     metric1 11.5 1519500493638
+    metric2 12.5 1519500493638
 
 
 Todo
