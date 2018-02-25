@@ -1,7 +1,7 @@
 kinvey-prometheus-pushgateway
 =============================
-[![Build Status](https://api.travis-ci.org/andrasq/node-google-custom-metrics.svg?branch=master)](https://travis-ci.org/andrasq/node-google-custom-metrics?branch=master)
-[![Coverage Status](https://codecov.io/github/andrasq/node-google-custom-metrics/coverage.svg?branch=master)](https://codecov.io/github/andrasq/node-google-custom-metrics?branch=master)
+[![Build Status](https://api.travis-ci.org/andrasq/node-kinvey-prometheus-pushgateway.svg?branch=master)](https://travis-ci.org/andrasq/node-kinvey-prometheus-pushgateway?branch=master)
+[![Coverage Status](https://codecov.io/github/andrasq/node-kinvey-prometheus-pushgateway/coverage.svg?branch=master)](https://codecov.io/github/andrasq/node-kinvey-prometheus-pushgateway?branch=master)
 
 
 Embeddable aggregating Prometheus push gateway.
