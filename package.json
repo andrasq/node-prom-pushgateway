@@ -10,7 +10,6 @@
   },
 
   "dependencies": {
-    "config": "1.16.0"
   },
   "devDependencies": {
     "qnit": "0.22.0"
