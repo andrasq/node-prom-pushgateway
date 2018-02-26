@@ -95,6 +95,24 @@ module.exports = {
             t.done();
         }, 5);
     },
+
+    'script should delay exiting on disconnect for a little while': function(t) {
+        const clock = t.mockTimers();
+        t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
+
+        unrequire('../lib/service-worker.js');
+        require('../lib/service-worker.js');
+
+        process.emit('message', { n: 'createServer', m: { } });
+        process.emit('disconnect');
+        setTimeout(function() {
+            // process must not have exited yet
+            t.unmockTimers();
+            process.emit('ignore_disconnect');
+            t.done();
+        }, 5000);
+        clock.tick(5000);
+    },
 }
 
 // from qmock:
