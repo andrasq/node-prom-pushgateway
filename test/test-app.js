@@ -127,7 +127,7 @@ module.exports = {
             t.done();
         },
 
-        'should return process error': function(t) {
+        'should catch and return process exception': function(t) {
             t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
             const server = app.createServer({ port: 12345 });
             var req = new MockReq('/test/exception'), res = new MockRes();
@@ -179,6 +179,18 @@ module.exports = {
             t.deepEqual(this.gateway.calls, [ ['ingestMetricsStackdriver', postData] ]);
             t.deepEqual(this.res.calls[0], ['writeHead', 200, undefined]);
             t.deepEqual(this.res.calls[1], ['end', 'Published']);
+            t.done();
+        },
+
+        'POST /v1/custom should call /push/stackdriver': function(t) {
+            this.req.url = '/v1/custom';
+            this.req.method = 'POST';
+            const spy = t.spy(app, 'processRequest');
+            app.processRequest(this.req, this.res, '{}', this.gateway);
+            t.equal(spy.callCount, 2);
+            t.deepEqual(spy.args[0], [this.req, this.res, '{}', this.gateway]);
+            t.deepEqual(spy.args[1], [this.req, this.res, '{}', this.gateway]);
+            t.equal(this.req.url, '/push/stackdriver');
             t.done();
         },
 

@@ -77,6 +77,7 @@ The stats are cached until collected by a call to /metrics.
     metric2{host="host-name"} 2.5 1519998877123
 
 ### POST /push/stackdriver
+### POST /v1/custom
 
 Push legacy-Stackdriver format stats to the gateway to be scraped by Prometheus.
 
@@ -116,7 +117,7 @@ last reported values are sent again.
 Change Log
 ----------
 
-- 0.6.0 - `config.labels` support
+- 0.6.0 - `config.labels` support, rename to prom-pushgateway, /v1/custom endpoint
 - 0.5.2 - 100% test coverage
 - 0.5.0 - fully working
 
