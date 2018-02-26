@@ -1,5 +1,5 @@
 {
-  "name": "kinvey-prometheus-pushgateway",
+  "name": "prom-pushgateway",
   "description": "kinvey prometheus push gateway",
   "version": "0.6.0",
   "keywords": [ "prometheus", "monitoring", "metrics", "kinvey" ],

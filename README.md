@@ -1,10 +1,14 @@
-kinvey-prometheus-pushgateway
+prom-pushgateway
 =============================
-[![Build Status](https://api.travis-ci.org/andrasq/node-kinvey-prometheus-pushgateway.svg?branch=master)](https://travis-ci.org/andrasq/node-kinvey-prometheus-pushgateway?branch=master)
-[![Coverage Status](https://codecov.io/github/andrasq/node-kinvey-prometheus-pushgateway/coverage.svg?branch=master)](https://codecov.io/github/andrasq/node-kinvey-prometheus-pushgateway?branch=master)
+[![Build Status](https://api.travis-ci.org/andrasq/node-prom-pushgateway.svg?branch=master)](https://travis-ci.org/andrasq/node-prom-pushgateway?branch=master)
+[![Coverage Status](https://codecov.io/github/andrasq/node-prom-pushgateway/coverage.svg?branch=master)](https://codecov.io/github/andrasq/node-prom-pushgateway?branch=master)
 
 
 Embeddable aggregating Prometheus push gateway.
+
+`prom-pushgateway` is a low overhead nodejs module that can be included in other apps
+to expose a Promptheus compatible metrics endpoint, or can run standalone to provide
+an independent, Prometheus scrapable metrics push service.
 
 Accepts stats from an app and presents them to be scraped by Prometheus.  Same-named
 stats are subsampled (averaged), which allows stats to be gathered more frequently
@@ -18,10 +22,11 @@ Overview
 
 The gateway forks itself into a separate process and listens for requests.
 
-    const gw = require('kinvey-prometheus-pushgateway');
-    gw.forkServer({ port: 9091 }, (err, info) => {
+    const gw = require('prom-pushgateway');
+    const worker = gw.forkServer({ port: 9091 }, (err, info) => {
         // => { pid: 12345, port: 9091 }
     })
+
 
 Api
 ---
@@ -36,6 +41,7 @@ process id to the `callback`.
 Run `createServer` in a child process, and return its port and pid back to the parent.
 This decouples the gateway from the event loop of the application.  The child will
 exit soon after the parent exits.
+
 
 Config
 ------
