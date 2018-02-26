@@ -196,7 +196,7 @@ module.exports = {
                 'metric2 2   1500000002000\n' +
                 'metric1 1.2 1500000001000\n' +
                 'metric2 3   1500000003000\n' +
-                'metric3 3' +
+                'metric3{name="value"} 3' +
                 '';
             done();
         },
@@ -249,7 +249,7 @@ module.exports = {
                 const report = gw.reportMetrics();
                 t.contains(report, 'metric1 1.1 1500000002000');
                 t.contains(report, 'metric2 2.5 1500000003000');
-                t.ok('metric3 3 ' + start <= report[2] && report[2] <= 'metric3 3 ' + Date.now());
+                t.ok('metric3{name="value"} 3 ' + start <= report[2] && report[2] <= 'metric3{name="value"} 3 ' + Date.now());
                 t.done();
             })
         },
@@ -267,13 +267,47 @@ module.exports = {
                     t.equal(report2.length, 2);
                     t.contains(report2[0], 'metric1 1');
                     t.contains(report2[1], 'metric2 2');
+                    const report3 = gw.reportMetrics();
+                    t.deepEqual(report3, report2);
                     t.done();
                 })
             })
         },
 
-        'should attach configured labels to metrics': function(t) {
-t.skip();
+        'should merge configured labels with metrics labels': function(t) {
+            const metrics = 'metric1{host="host-name-01"} 11.5 1500000001000\n' + 'metric1{host="host-name-01"} 13.5 1500000021000\n';
+            var gw, report;
+
+            gw = new Gateway({ labels: { host: 'host-02' } });
+            gw.ingestMetrics('metric1 11.5 1600000001000\n', function(err) {
+                t.ifError(err);
+                report = gw.reportMetrics();
+                t.contains(report[0], 'metric1{host="host-02",} 11.5 1600000001000');
+
+            gw = new Gateway({ labels: { } });
+            gw.ingestMetrics(metrics, function(err) {
+                t.ifError(err);
+                report = gw.reportMetrics();
+                t.equal(report.length, 1);
+                t.contains(report[0], 'metric1{host="host-name-01"} 12.5 1500000021000');
+
+            gw = new Gateway({ labels: { one: 1, } });
+            gw.ingestMetrics(metrics, function(err) {
+                t.ifError(err);
+                report = gw.reportMetrics();
+                t.equal(report.length, 1);
+                t.contains(report[0], 'metric1{one="1",host="host-name-01"} 12.5 1500000021000');
+
+            gw = new Gateway({ labels: { a: 'one', b: 'two' } });
+            gw.ingestMetrics(metrics, function(err) {
+                t.ifError(err);
+                report = gw.reportMetrics();
+                t.equal(report.length, 1);
+                t.contains(report[0], 'metric1{a="one",b="two",host="host-name-01"} 12.5 1500000021000');
+
+                t.done();
+
+            }) }) }) })
         },
     },
 }

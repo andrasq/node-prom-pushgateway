@@ -107,10 +107,25 @@ last reported values are sent again.
     metric2 12.5 1519500493638
 
 
+Change Log
+----------
+
+- 0.6.0 - `config.labels` support
+- 0.5.2 - 100% test coverage
+- 0.5.0 - fully working
+
+
+Related Work
+------------
+
+- [prometheus](https://github.com/prometheus) - Prometheus monitoring
+- [prometheus-pushgateway](https://github.com/prometheus/pushgateway) - prometheus-pushgateway
+  scrapable metrics cache
+
+
 Todo
 ----
 
 - checkpoint metrics into a local journal (to back up the in-memory copy).
   Load journal on start, empty when scraped.
 - report metrics with a configurable separation gap to not split clusters of points
-- implement `config.labels` support
