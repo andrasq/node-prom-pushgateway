@@ -127,6 +127,7 @@ last reported values are sent again.
 Change Log
 ----------
 
+- 0.6.1 - retry to listen, `listenTimeout`
 - 0.6.0 - `config.labels` support, rename to prom-pushgateway, /v1/custom endpoint
 - 0.5.2 - 100% test coverage
 - 0.5.0 - fully working
