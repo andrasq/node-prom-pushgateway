@@ -6,13 +6,16 @@ prom-pushgateway
 
 Embeddable aggregating Prometheus push gateway.
 
-`prom-pushgateway` is a low overhead nodejs module that can be included in other apps
-to expose a Promptheus compatible metrics endpoint, or can run standalone to provide
-an independent, Prometheus scrapable metrics push service.
+`prom-pushgateway` is a low overhead embeddable nodejs nanoservice.  It can be
+included in other apps to expose a Promptheus compatible metrics endpoint, or can run
+standalone to provide an independent, Prometheus scrapable metrics push service.
 
 Accepts stats from an app and presents them to be scraped by Prometheus.  Same-named
 stats are subsampled (averaged), which allows stats to be gathered more frequently
 than the scrape interval, and simplifies stats reporting from multi-threaded apps.
+
+Also implements a Stackdriver compatible push endpoint to simplify the upload of
+legacy Stackdriver metrics to Prometheus.
 
 All metrics values are treated as untyped, unconstrained numbers, ie gauges.
 

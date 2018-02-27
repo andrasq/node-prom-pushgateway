@@ -1,7 +1,7 @@
 {
   "name": "prom-pushgateway",
   "description": "embeddable aggregating prometheus push gateway",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "keywords": [ "prometheus", "monitoring", "metrics", "push", "aggregating" ],
   "author": "Andras",
   "license": "Apache-2.0",
