@@ -33,14 +33,23 @@ Api
 
 ### gw.createServer( config, [callback] )
 
-Create a pushgateway server listening on `config.port`, and return its port and
-process id to the `callback`.
+Create a pushgateway http server listening on `config.port`, and return the server.
+
+With a callback tries for up to `listenTimeout` ms to acquire and listen on the socket
+and returns any error or the port and process id of the server to its callback.
+
+Without a callback it does not retry, it throws a listen error if the port is not
+available, or emits an `'error'` event on the server if there is a listener for it.
 
 ### gw.forkServer( config, [callback] )
 
 Run `createServer` in a child process, and return its port and pid back to the parent.
-This decouples the gateway from the event loop of the application.  The child will
-exit soon after the parent exits.
+This decouples the gateway from the event loop of the application.  The worker will
+exit soon after the parent exits.  On error the worker is killed.
+
+Internally `createServer` is called with a callback; if `forkServer` is called with a
+callback, errors and port/pid are returned to the caller, without a callback errors
+are rethrown.
 
 
 Config
@@ -49,6 +58,7 @@ Config
 - `port` - port to listen on, default 9091 (same as prometheus-pushgateway)
 - `labels` - hash of labels to add to reported metrics, default `{}` none (TBD)
 - `verbose` - whether to log service start/stop messages, default false.
+- `listenTimeout` - how long to retry to listen() on the configured socket
 
 Other config settings are ignored.
 
@@ -136,3 +146,4 @@ Todo
 - checkpoint metrics into a local journal (to back up the in-memory copy).
   Load journal on start, empty when scraped.
 - report metrics with a configurable separation gap to not split clusters of points
+- cache aggregates, not samples

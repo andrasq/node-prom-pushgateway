@@ -77,6 +77,19 @@ module.exports = {
                 t.done();
             })
         },
+
+        'verbose mode should write startup error': function(t) {
+            var output = "";
+            t.stubOnce(app, 'createServer', function(opts, cb) { cb(new Error('listen EADDRINUSE')) });
+            const spy = t.stub(process.stdout, 'write', function(chunk) { output += chunk });
+            const server = serv.createServer({ port: 9091, verbose: true }, function(err, info) {
+                spy.restore();
+                t.ok(err);
+                t.contains(output, 'Starting');
+                t.contains(output, 'Could not listen');
+                t.done();
+            })
+        },
     },
 
     'forkServer': {
