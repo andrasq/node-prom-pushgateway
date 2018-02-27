@@ -131,6 +131,42 @@ module.exports = {
             t.done();
         },
 
+        'should retry listen until listening': function(t) {
+            const server = new MockServer();
+            const startTime = Date.now();
+            const spyListen = t.stub(server, 'listen', function(port, cb){
+                if (Date.now() < startTime + 200) return server.emit('error', new Error('listen EADDRINUSE'));
+                server.emit('listening');
+                cb();
+            })
+            t.stubOnce(http, 'createServer', function(onRequest) { return server });
+            app.createServer({ port: 13337, listenTimeout: 300 }, function(err) {
+                t.ifError(err);
+                t.ok(spyListen.callCount > 3);
+                t.ok(Date.now() >= startTime + 200);
+                t.done();
+            })
+        },
+
+        'should return listen error if listen retry times out': function(t) {
+            const server = new MockServer();
+            server.listen = function() { server.emit('error', new Error('listen EADDRINUSE')) };
+            t.stubOnce(http, 'createServer', function(onRequest) { return server });
+            app.createServer({ port: 13337, listenTimeout: 205 }, function(err) {
+                t.ok(err);
+                t.contains(err.message, 'EADDRINUSE');
+                t.done();
+            })
+        },
+
+        'should throw listen error without callback if cannot listen': function(t) {
+            const server = new MockServer();
+            server.listen = function() { server.emit('error', new Error('listen EADDRINUSE')) };
+            t.stubOnce(http, 'createServer', function(onRequest) { return server });
+            t.throws(function(){ app.createServer({ port: 13337, listenTimeout: 100 }) }, /EADDRINUSE/);
+            t.done();
+        },
+
         'should process requests': function(t) {
             t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
             const server = app.createServer({ port: 12345 });
@@ -222,15 +258,18 @@ module.exports = {
 
 function MockServer( onRequest ) {
     const self = this;
+    events.EventEmitter.call(this);
+
     this.onRequest = onRequest;
     this.calls = [];
     this.listen = function(port, cb) { self.calls.push(['listen', port]); cb(); };
 }
+util.inherits(MockServer, events.EventEmitter);
 
 function MockReq( url ) {
     const self = this;
-
     events.EventEmitter.call(this);
+
     this.method = 'GET';
     this.url = url || '/';
 
