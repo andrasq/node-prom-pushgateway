@@ -82,12 +82,19 @@ The stats are cached until collected by a call to /metrics.
 
     $ curl --data-binary @- << EOF http://localhots:9091/push
     metric1 11.5
-    metric2{host="host-name"} 12.5
+    metric2{host="host-01"} 12.5
+    metric2{host="host-02"} 13.5
     EOF
 
     $ curl http://localhost:9091/metrics
+    # HELP metric1 custom metric
+    # TYPE metric1 gauge
     metric1 11.5 1519998877123
-    metric2{host="host-name"} 2.5 1519998877123
+
+    # HELP metric2 custom metric
+    # TYPE metric2 gauge
+    metric2{host="host-01"} 12.5 1519998877123
+    metric2{host="host-02"} 13.5 1519998877123
 
 ### POST /push/stackdriver
 ### POST /v1/custom
@@ -106,7 +113,12 @@ Push legacy-Stackdriver format stats to the gateway to be scraped by Prometheus.
     // => Published
 
     $ curl http://localhost:9091/metrics
+    # HELP metric1 custom metric
+    # TYPE metric1 gauge
     metric1{instance="i-001234"} 1.5 1519534800000
+
+    # HELP metric2 custom metric
+    # TYPE metric2 gauge
     metric2 2.5 1519534800000
 
 ### GET /metrics
@@ -123,13 +135,19 @@ last reported values are sent again.
     < Connection: keep-alive
     < Transfer-Encoding: chunked
     <
+    # HELP metric1 custom metric
+    # TYPE metric1 gauge
     metric1 11.5 1519500493638
+
+    # HELP metric2 custom metric
+    # TYPE metric2 gauge
     metric2 12.5 1519500493638
 
 
 Change Log
 ----------
 
+- 0.6.2 - report metrics grouped by name, with help and type tags
 - 0.6.1 - retry to listen, `listenTimeout`
 - 0.6.0 - `config.labels` support, rename to prom-pushgateway, /v1/custom endpoint
 - 0.5.2 - 100% test coverage
