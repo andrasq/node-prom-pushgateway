@@ -147,6 +147,7 @@ last reported values are sent again.
 Change Log
 ----------
 
+- 0.6.3 - publish the readme edits and package.json readme test
 - 0.6.2 - report metrics grouped by name, with help and type tags
 - 0.6.1 - retry to listen, `listenTimeout`
 - 0.6.0 - `config.labels` support, rename to prom-pushgateway, /v1/custom endpoint
