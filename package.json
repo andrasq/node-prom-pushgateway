@@ -6,6 +6,7 @@
   "author": "Andras",
   "license": "Apache-2.0",
   "repository": "https://github.com/andrasq/node-prom-pushgateway/#readme",
+  "readme": "https://github.com/andrasq/node-prom-pushgateway/#readme",
   "engines": {
     "node": ">=4"
   },
