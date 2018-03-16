@@ -171,3 +171,4 @@ Todo
   Load journal on start, empty when scraped.
 - report metrics with a configurable separation gap to not split clusters of points
 - cache aggregates, not samples
+- new: expose a `close(cb)` method to close/kill the server
