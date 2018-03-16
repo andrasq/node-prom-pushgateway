@@ -160,9 +160,8 @@ Related Work
 - [prometheus](https://github.com/prometheus) - Prometheus monitoring
 - [prometheus-pushgateway](https://github.com/prometheus/pushgateway) - prometheus-pushgateway
   scrapable metrics cache
-- [google-custom-metrics](https://github.com/andrasq/node-google-custom-metrics) - expose
-  legacy Stackdriver custom metrics to collection by Prometheus
-
+- [google-custom-metrics](https://npmjs.com/package/google-custom-metrics) - library to
+  convert and push legacy Stackdriver metrics to Google Stackdriver
 
 Todo
 ----
