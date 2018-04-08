@@ -44,6 +44,13 @@ and returns any error or the port and process id of the server to its callback.
 Without a callback it does not retry, it throws a listen error if the port is not
 available, or emits an `'error'` event on the server if there is a listener for it.
 
+    // publish prom-client metrics on port 9091
+    const promClient = require('prom-client');
+    promClient.collectDefaultMetrics();
+    const gw = require('prom-pushgateway').createServer({
+        readPromMetrics: function() { return promClient.register.metrics() }
+    });
+
 ### gw.forkServer( config, [callback] )
 
 Run `createServer` in a child process, and return its port and pid back to the parent.
@@ -59,9 +66,11 @@ Config
 ------
 
 - `port` - port to listen on, default 9091 (same as prometheus-pushgateway)
-- `labels` - hash of labels to add to reported metrics, default `{}` none (TBD)
-- `verbose` - whether to log service start/stop messages, default false.
+- `labels` - hash of labels to add to reported metrics, default `{}` none
+- `verbose` - whether to log service start/stop messages, default false
 - `listenTimeout` - how long to retry to listen() on the configured socket
+- `readPromMetrics` - function to retrieve Prometheus metrics for inclusion in a
+  `/metrics` report, default none.
 
 Other config settings are ignored.
 
@@ -147,6 +156,7 @@ last reported values are sent again.
 Change Log
 ----------
 
+- 0.7.0 - preserve prom metrics HELP and TYPE info, `readPromMetrics` callout function constructor option
 - 0.6.3 - publish the readme edits and package.json readme test
 - 0.6.2 - report metrics grouped by name, with help and type tags
 - 0.6.1 - retry to listen, `listenTimeout`

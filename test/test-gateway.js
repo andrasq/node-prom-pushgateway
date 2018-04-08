@@ -312,6 +312,18 @@ module.exports = {
             })
         },
 
+        'should include readPromMetrics() values': function(t) {
+            var called;
+            var promMetrics = "other metrics";
+            const gw = new Gateway({ readPromMetrics: function() { called = true; return promMetrics } });
+            const spyIngest = t.spyOnce(gw, 'ingestMetrics');
+            gw.reportMetrics();
+            t.ok(called);
+            t.ok(spyIngest.called);
+            t.equal(spyIngest.args[0][0], promMetrics);
+            t.done();
+        },
+
         'should report previous values': function(t) {
             const gw = this.gw;
             gw.ingestMetrics('metric1 1 1500000001000\n', function(err) {
