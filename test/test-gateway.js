@@ -96,10 +96,9 @@ module.exports = {
                 t.contains(spyWrite.args[0][0], '\nmetric1\n');
                 t.contains(spyWrite.args[0][0], '\n1234\n');
                 t.notContains(spyWrite.args[0][0], '\n# TYPE\n');
-                t.contains(spyWrite.args[0][0], '\n# TYPE counter\n');
                 // spyParse is called with (contents, badLines, goodLines, samples)
                 // goodLines and badLines are populated by parseMetricsLines
-                t.deepEqual(spyParse.args[0][1], ['metric1', '1234', '# TYPE counter']);
+                t.deepEqual(spyParse.args[0][1], ['metric1', '1234']);
                 t.equal(spyParse.args[0][2].length, 1);
                 t.ok(spyParse.args[0][2][0].match(/^metric2 2 \d+$/));
                 t.done();
@@ -189,7 +188,6 @@ module.exports = {
 
         'should separate bad lines': function(t) {
             this.gw.parseMetricsLines(this.lines, this.badLines, this.goodLines, this.samples);
-            t.contains(this.badLines, '# TYPE counter');
             t.contains(this.badLines, 'bad_metric');
             t.done();
         },
