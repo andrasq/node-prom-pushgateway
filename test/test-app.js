@@ -167,6 +167,21 @@ module.exports = {
             t.done();
         },
 
+        'should call processRequest on on http request': function(t) {
+            t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
+            const server = app.createServer({ port: 12345 });
+            const spy = t.spyOnce(app, 'processRequest');
+            const req = new MockReq('/healthcheck');
+            const res = new MockRes();
+            server.onRequest(req, res);
+            req.end('test body');
+            t.equal(spy.args[0][0], req);
+            t.equal(spy.args[0][1], res);
+            t.equal(spy.args[0][2], 'test body');
+            t.equal(spy.args[0][3], server.gateway);
+            t.done();
+        },
+
         'should process requests': function(t) {
             t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
             const server = app.createServer({ port: 12345 });
@@ -176,6 +191,19 @@ module.exports = {
             req.end();
             t.deepEqual(res.calls[0], ['writeHead', 200, undefined]);
             t.deepEqual(res.calls[1], ['end', 'OK\n']);
+            t.done();
+        },
+
+        'should process requests with the configured gateway': function(t) {
+            t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
+            const gw = {};
+            const server = app.createServer({ port: 12345, gateway: gw });
+            const spy = t.spyOnce(app, 'processRequest');
+            var req = new MockReq('/healthcheck');
+            var res = new MockRes();
+            server.onRequest(req, res);
+            req.end();
+            t.equal(spy.args[0][3], gw);
             t.done();
         },
 

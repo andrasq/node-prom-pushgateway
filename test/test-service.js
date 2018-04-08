@@ -21,11 +21,13 @@ const events = require('events');
 const child_process = require('child_process');
 const app = require('../lib/app');
 const serv = require('../lib/service');
+const Gateway = require('../lib/gateway');
 
 module.exports = {
     'should export expected functions': function(t) {
         t.equal(typeof serv.createServer, 'function');
         t.equal(typeof serv.forkServer, 'function');
+        t.equal(typeof serv.createGateway, 'function');
         t.done();
     },
 
@@ -52,6 +54,25 @@ module.exports = {
             t.ok(spy.called);
             t.contains(spy.args[0][0], { port: 13338, labels: {} });
             t.done();
+        },
+
+        'should expose gateway': function(t) {
+            const server = serv.createServer({ port: 13337 }, function(err) {
+                t.ifError(err);
+                server.close();
+                t.ok(server.gateway instanceof Gateway);
+                t.done();
+            })
+        },
+
+        'should use provided gateway': function(t) {
+            const gw = {};
+            const server = serv.createServer({ port: 13337, gateway: gw }, function(err) {
+                t.ifError(err);
+                server.close();
+                t.equal(server.gateway, gw);
+                t.done();
+            })
         },
 
         'should assemble and pass journalFilename': function(t) {
@@ -174,6 +195,13 @@ module.exports = {
                     t.done();
                 })
             },
+        },
+    },
+
+    'createGateway': {
+        'should create a Gateway': function(t) {
+            t.ok(serv.createGateway() instanceof Gateway);
+            t.done();
         },
     },
 }

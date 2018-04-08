@@ -61,6 +61,18 @@ Internally `createServer` is called with a callback; if `forkServer` is called w
 callback, errors and port/pid are returned to the caller, without a callback errors
 are rethrown.
 
+### gw.createGateway( config )
+
+Create a pushgateway, usable by `createServer`.
+
+The pushgateway has methods
+- `ingestMetrics(report, cb)` - cache the metrics contained in the prom-client format
+  metrics report string
+- `ingestMetricsStackdriver(body, cb)` - cache the metrics contained in the
+  legacy stackdriver format metrics upload string
+- `reportMetrics()` - average the cached metrics, and return a prom-client formatted
+  metrics report string
+
 
 Config
 ------
@@ -71,6 +83,8 @@ Config
 - `listenTimeout` - how long to retry to listen() on the configured socket
 - `readPromMetrics` - function to retrieve Prometheus metrics for inclusion in a
   `/metrics` report, default none.
+- `gateway` - use the proviced Gateway object instead of creating a new one.
+  This option is ignored by `forkServer`.
 
 Other config settings are ignored.
 
@@ -93,6 +107,8 @@ The stats are cached until collected by a call to /metrics.
     metric1 11.5
     metric2{host="host-01"} 12.5
     metric2{host="host-02"} 13.5
+    # TYPE metric3 counter
+    metric3 7
     EOF
 
     $ curl http://localhost:9091/metrics
@@ -104,6 +120,10 @@ The stats are cached until collected by a call to /metrics.
     # TYPE metric2 gauge
     metric2{host="host-01"} 12.5 1519998877123
     metric2{host="host-02"} 13.5 1519998877123
+
+    # HELP metric3 custom metric
+    # TYPE metric3 counter
+    metric3 7 1519998877123
 
 ### POST /push/stackdriver
 ### POST /v1/custom
@@ -156,6 +176,7 @@ last reported values are sent again.
 Change Log
 ----------
 
+- 0.8.0 - `createGateway` method, and `createServer` `gateway` option
 - 0.7.0 - preserve prom metrics HELP and TYPE info, `readPromMetrics` callout function constructor option
 - 0.6.3 - publish the readme edits and package.json readme test
 - 0.6.2 - report metrics grouped by name, with help and type tags
