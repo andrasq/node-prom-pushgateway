@@ -96,10 +96,9 @@ module.exports = {
                 t.contains(spyWrite.args[0][0], '\nmetric1\n');
                 t.contains(spyWrite.args[0][0], '\n1234\n');
                 t.notContains(spyWrite.args[0][0], '\n# TYPE\n');
-                t.contains(spyWrite.args[0][0], '\n# TYPE counter\n');
                 // spyParse is called with (contents, badLines, goodLines, samples)
                 // goodLines and badLines are populated by parseMetricsLines
-                t.deepEqual(spyParse.args[0][1], ['metric1', '1234', '# TYPE counter']);
+                t.deepEqual(spyParse.args[0][1], ['metric1', '1234']);
                 t.equal(spyParse.args[0][2].length, 1);
                 t.ok(spyParse.args[0][2][0].match(/^metric2 2 \d+$/));
                 t.done();
@@ -134,9 +133,9 @@ module.exports = {
             };
             gw.ingestMetricsStackdriver(JSON.stringify(metrics), function(err) {
                 t.equal(gw.samples.length, 3);
-                t.deepEqual(gw.samples[0], { id: 'metric1{instance="i-000123"}', name: 'metric1', value: '1.5', ts: '1234000', labels: 'instance="i-000123"' });
-                t.deepEqual(gw.samples[1], { id: 'metric2', name: 'metric2', value: '2.5', ts: '1235000', labels: '' });
-                t.deepEqual(gw.samples[2], { id: 'metric3', name: 'metric3', value: 'NaN', ts: '2111111111000', labels: '' });
+                t.deepEqual(gw.samples[0], { id: 'metric1{instance="i-000123"}', name: 'metric1', value: '1.5', ts: '1234000', labels: 'instance="i-000123"', help: null, type: null });
+                t.deepEqual(gw.samples[1], { id: 'metric2', name: 'metric2', value: '2.5', ts: '1235000', labels: '', help: null, type: null });
+                t.deepEqual(gw.samples[2], { id: 'metric3', name: 'metric3', value: 'NaN', ts: '2111111111000', labels: '', help: null, type: null });
                 t.done();
             })
         },
@@ -189,7 +188,6 @@ module.exports = {
 
         'should separate bad lines': function(t) {
             this.gw.parseMetricsLines(this.lines, this.badLines, this.goodLines, this.samples);
-            t.contains(this.badLines, '# TYPE counter');
             t.contains(this.badLines, 'bad_metric');
             t.done();
         },
@@ -283,6 +281,33 @@ module.exports = {
                 t.contains(report, '# HELP metric1 custom metric\n# TYPE metric1 gauge\nmetric1{host="host-01"} 1 1500000001000\nmetric1{host="host-03"} 3 1500000003000\n\n');
                 t.contains(report, '# HELP metric2 custom metric\n# TYPE metric2 gauge\n');
                 t.contains(report, 'metric2{host="host-02"} 2 1500000002000\n\n');
+                t.done();
+            })
+        },
+
+        'should preserve prom HELP and TYPE': function(t) {
+            const gw = this.gw;
+            const metrics =
+                'metric1 1 1500000001000\n' +
+                '\n' +
+                '# HELP metric2 my metric\n' +
+                '# TYPE metric2 my-type\n' +
+                'metric2{a="1"} 1\n' +
+                'metric2{a="2"} 2\n' +
+                '\n' +
+                '# HELP metric3 my other metric\n' +
+                '# TYPE metric3 my-other-type\n' +
+                'metric3{b="1"} 3 1500000003000\n' +
+                '\n' +
+                'metric4 4 1500000004000\n' +
+                '';
+            gw.ingestMetrics(metrics, function(err) {
+                t.ifError(err);
+                const report = gw.reportMetrics().join('\n') + '\n';
+                t.contains(report, '# HELP metric1 custom metric\n# TYPE metric1 gauge\nmetric1 1 1500000001000\n');
+                t.contains(report, '# HELP metric2 my metric\n# TYPE metric2 my-type\nmetric2{a="1"} 1');
+                t.contains(report, '# HELP metric3 my other metric\n# TYPE metric3 my-other-type\nmetric3{b="1"} 3 1500000003000');
+                t.contains(report, '# HELP metric4 custom metric\n# TYPE metric4 gauge\nmetric4 4 1500000004000\n');
                 t.done();
             })
         },
