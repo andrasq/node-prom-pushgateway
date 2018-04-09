@@ -17,7 +17,9 @@ than the scrape interval, and simplifies stats reporting from multi-threaded app
 Also implements a Stackdriver compatible push endpoint to simplify the upload of
 legacy Stackdriver metrics to Prometheus.
 
-All metrics values are treated as untyped, unconstrained numbers, ie gauges.
+The HELP and TYPE attributes are remembered and associated with the named metrics;
+untyped metrics are reported as gauges.  Use `/push` or `gateway.ingestMetrics()` to set
+typing information with comment lines `# TYPE <name> <type>\n`.
 
 
 Overview
@@ -67,24 +69,30 @@ Create a pushgateway, usable by `createServer`.
 
 The pushgateway has methods
 - `ingestMetrics(report, cb)` - cache the metrics contained in the prom-client format
-  metrics report string
+  newline delimited metrics report string
 - `ingestMetricsStackdriver(body, cb)` - cache the metrics contained in the
   legacy stackdriver format metrics upload string
 - `reportMetrics()` - average the cached metrics, and return a prom-client formatted
-  metrics report string
+  metrics report string.  Metrics are reported as values, not deltas; if no new metrics
+  arrived, the last reported values are sent again.
+- `clear()` - forget all seen metrics and HELP and TYPE information
 
 
 Config
 ------
 
+Server options:
 - `port` - port to listen on, default 9091 (same as prometheus-pushgateway)
-- `labels` - hash of labels to add to reported metrics, default `{}` none
 - `verbose` - whether to log service start/stop messages, default false
 - `listenTimeout` - how long to retry to listen() on the configured socket
-- `readPromMetrics` - function to retrieve Prometheus metrics for inclusion in a
-  `/metrics` report, default none.
+  before giving up
 - `gateway` - use the proviced Gateway object instead of creating a new one.
   This option is ignored by `forkServer`.
+
+Gateway options:
+- `labels` - hash of labels to add to reported metrics, default `{}` none
+- `readPromMetrics` - function to retrieve Prometheus metrics for inclusion in a
+  `/metrics` report, default none.
 
 Other config settings are ignored.
 
@@ -176,6 +184,7 @@ last reported values are sent again.
 Change Log
 ----------
 
+- 0.9.0 - `gateway.clear` method, reuse HELP and TYPE attributes by metric name
 - 0.8.0 - `createGateway` method, and `createServer` `gateway` option
 - 0.7.0 - preserve prom metrics HELP and TYPE info, `readPromMetrics` callout function constructor option
 - 0.6.3 - publish the readme edits and package.json readme test
