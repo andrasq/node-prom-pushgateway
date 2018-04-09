@@ -104,6 +104,97 @@ module.exports = {
                 t.done();
             })
         },
+
+        'should remember help and type attributes until cleared': function(t) {
+            const gw = this.gw;
+            const typeMetrics =
+                '# TYPE t1 my-type\n' +
+                '# HELP t2 my-help\n' +
+                '# TYPE t1 my-type-t1\n' +
+                '# TYPE t2 my-type-t2\n' +
+                '';
+            const valueMetrics =
+                '\n' +
+                't1 1 1500000001000\n' +
+                '\n' +
+                't2 2 1500000002000\n' +
+                '';
+            gw.ingestMetrics(typeMetrics + valueMetrics, function(err) {
+                t.ifError(err);
+                t.contains(gw.helpInfo, { t2: '# HELP t2 my-help' });
+                t.contains(gw.typeInfo, { t1: '# TYPE t1 my-type-t1' });
+
+                const report = gw.reportMetrics().join('\n') + '\n';
+                t.contains(report, '# HELP t1 custom metric\n# TYPE t1 my-type-t1\nt1 1 1500000001000\n');
+                t.contains(report, '# HELP t2 my-help\n# TYPE t2 my-type-t2\nt2 2 1500000002000\n');
+
+                const report2 = gw.reportMetrics().join('\n') + '\n';
+                t.contains(report2, '# HELP t1 custom metric\n# TYPE t1 my-type-t1\nt1 1 1500000001000\n');
+                t.contains(report2, '# HELP t2 my-help\n# TYPE t2 my-type-t2\nt2 2 1500000002000\n');
+
+                gw.clear();
+                gw.ingestMetrics(valueMetrics, function(err) {
+                    t.ifError(err);
+
+                    const report3 = gw.reportMetrics().join('\n') + '\n';
+                    t.contains(report3, '# HELP t1 custom metric\n# TYPE t1 gauge\nt1 1 1500000001000\n');
+                    t.contains(report3, '# HELP t2 custom metric\n# TYPE t2 gauge\nt2 2 1500000002000\n');
+
+                    t.done();
+                })
+            })
+        },
+
+        'should associate remembered type attributes with labeled metric name': function(t) {
+            const gw = this.gw;
+            gw.ingestMetrics('# TYPE t1 my-type', function(err) {
+                t.ifError(err);
+                gw.ingestMetrics('\n\nt2 23\n\nt1{x="1"} 12\n', function(err) {
+                    t.ifError(err);
+                    t.contains(gw.reportMetrics().join('\n'), '# TYPE t1 my-type\nt1{x="1"} 12');
+                    t.done();
+                })
+            })
+        },
+
+        'should retain last metric value until cleared': function(t) {
+            const gw = this.gw;
+            const metrics =
+                't1 1 1500000001000\n' +
+                't2 2 1500000002000\n' +
+                '';
+            gw.ingestMetrics(metrics, function(err) {
+                t.ifError(err);
+                const report = gw.reportMetrics().join('\n');
+                t.contains(report, 't1 1 1500000001000');
+                t.contains(report, 't2 2 1500000002000');
+
+                const report2 = gw.reportMetrics().join('\n');
+                t.contains(report2, 't1 1 1500000001000');
+                t.contains(report2, 't2 2 1500000002000');
+
+                gw.clear();
+                const report3 = gw.reportMetrics().join('\n');
+                t.equal(report3, '');
+
+                gw.ingestMetrics('t3 3', function(err) {
+                    t.ifError(err);
+                    const report4 = gw.reportMetrics().join('\n');
+                    t.contains(report4, 't3 3');
+
+                    t.done();
+                })
+            })
+        },
+
+        'should discard samples if cleared': function(t) {
+            const gw = this.gw;
+            gw.ingestMetrics('t1 1', function(err) {
+                gw.clear();
+                t.equal(gw.reportMetrics().join('\n'), '');
+                t.done();
+            })
+        },
     },
 
     'ingestMetricsStackdriver': {
@@ -133,9 +224,9 @@ module.exports = {
             };
             gw.ingestMetricsStackdriver(JSON.stringify(metrics), function(err) {
                 t.equal(gw.samples.length, 3);
-                t.deepEqual(gw.samples[0], { id: 'metric1{instance="i-000123"}', name: 'metric1', value: '1.5', ts: '1234000', labels: 'instance="i-000123"', help: null, type: null });
-                t.deepEqual(gw.samples[1], { id: 'metric2', name: 'metric2', value: '2.5', ts: '1235000', labels: '', help: null, type: null });
-                t.deepEqual(gw.samples[2], { id: 'metric3', name: 'metric3', value: 'NaN', ts: '2111111111000', labels: '', help: null, type: null });
+                t.deepEqual(gw.samples[0], { id: 'metric1{instance="i-000123"}', name: 'metric1', value: '1.5', ts: '1234000', labels: 'instance="i-000123"' });
+                t.deepEqual(gw.samples[1], { id: 'metric2', name: 'metric2', value: '2.5', ts: '1235000', labels: '' });
+                t.deepEqual(gw.samples[2], { id: 'metric3', name: 'metric3', value: 'NaN', ts: '2111111111000', labels: '' });
                 t.done();
             })
         },
