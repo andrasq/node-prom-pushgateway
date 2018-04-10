@@ -65,6 +65,34 @@ module.exports = {
             })
         },
 
+        'should pass valid options to server and gateway': function(t) {
+            const options = {
+                port: 0,
+                verbose: 10,
+                journalFilename: 'TBD',
+                labels: { a: 11 },
+                listenTimeout: 12,
+                readPromMetrics: () => '',
+                gateway: null,
+                anyPort: true,
+                maxMetricAgeMs: 12,
+                omitTimestamps: 23,
+            };
+            const server = serv.createServer(options, function(err, info) {
+                t.ifError(err);
+                server.close();
+
+                t.deepEqual(server.options, options);
+
+                t.equal(server.gateway.journalFilename, 'TBD');
+                t.equal(server.gateway.labels, 'a="11",');
+                t.equal(server.gateway.maxMetricAgeMs, 12);
+                t.equal(server.gateway.omitTimestamps, 23);
+                t.equal(server.gateway.readPromMetrics, options.readPromMetrics);
+                t.done();
+            })
+        },
+
         'should use provided gateway': function(t) {
             const gw = {};
             const server = serv.createServer({ port: 13337, gateway: gw }, function(err) {

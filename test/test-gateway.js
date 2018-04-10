@@ -325,7 +325,7 @@ module.exports = {
         'should consume samples from samples array': function(t) {
             const gw = this.gw;
             gw.ingestMetrics(this.metrics, function(err) {
-                t.ifError();
+                t.ifError(err);
                 const lenPre = gw.samples.length;
                 const report = gw.reportMetrics();
                 const lenPost = gw.samples.length;
@@ -338,10 +338,34 @@ module.exports = {
         'should average samples with the same id': function(t) {
             const gw = this.gw;
             gw.ingestMetrics(this.metrics, function(err) {
-                t.ifError();
+                t.ifError(err);
                 const report = gw.reportMetrics();
                 t.contains(report, 'metric1 1.1 1500000002000');
                 t.contains(report, 'metric2 2.5 1500000003000');
+                t.done();
+            })
+        },
+
+        'should honor omitTimestamps': function(t) {
+            const gw = new Gateway({ omitTimestamps: true, maxMetricAgeMs: Infinity });
+            gw.ingestMetrics(this.metrics, function(err) {
+                t.ifError(err);
+                const report = gw.reportMetrics();
+                t.contains(report, 'metric1 1.1');
+                t.contains(report, 'metric2 2.5');
+                t.done();
+            })
+        },
+
+        'should discard old samples': function(t) {
+            const gw = new Gateway({ omitTimestamps: true, maxMetricAgeMs: 1000 });
+            t.stub(gw, 'getTimestamp', () => 1500000003000);
+            gw.ingestMetrics(this.metrics, function(err) {
+                t.ifError(err);
+                const report = gw.reportMetrics();
+                t.contains(report, 'metric1 1');
+                t.contains(report, 'metric2 2.5');
+                t.contains(report, 'metric3{name="value"} 3');
                 t.done();
             })
         },
@@ -350,7 +374,7 @@ module.exports = {
             const start = Date.now();
             const gw = this.gw;
             gw.ingestMetrics(this.metrics, function(err) {
-                t.ifError();
+                t.ifError(err);
                 const report = gw.reportMetrics();
                 t.contains(report, 'metric1 1.1 1500000002000');
                 t.contains(report, 'metric2 2.5 1500000003000');
