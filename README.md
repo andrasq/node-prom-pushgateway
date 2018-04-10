@@ -46,7 +46,7 @@ and returns any error or the port and process id of the server to its callback.
 Without a callback it does not retry, it throws a listen error if the port is not
 available, or emits an `'error'` event on the server if there is a listener for it.
 
-    // publish prom-client metrics on port 9091
+    // publish prom-client default metrics on port 9091
     const promClient = require('prom-client');
     promClient.collectDefaultMetrics();
     const gw = require('prom-pushgateway').createServer({
@@ -82,12 +82,16 @@ Config
 ------
 
 Server options:
-- `port` - port to listen on, default 9091 (same as prometheus-pushgateway)
+- `port` - port to listen on, default 9091 (same as prometheus-pushgateway).
+  A `port` must be given unless `anyPort` is  is specified.
 - `verbose` - whether to log service start/stop messages, default false
 - `listenTimeout` - how long to retry to listen() on the configured socket
   before giving up
 - `gateway` - use the proviced Gateway object instead of creating a new one.
   This option is ignored by `forkServer`.
+- `anyPort` - if unable to listen on `port`, listen on any available port (port 0).
+  `createServer` returns the port the server is listening on.  If both `port` and
+  `anyPort` are specified, `port` is tried first.
 
 Gateway options:
 - `labels` - hash of labels to add to reported metrics, default `{}` none
@@ -184,7 +188,7 @@ last reported values are sent again.
 Change Log
 ----------
 
-- 0.9.0 - `gateway.clear` method, reuse HELP and TYPE attributes by metric name
+- 0.9.0 - `gateway.clear` method, `config.anyPort`, reuse HELP and TYPE attributes by metric name
 - 0.8.0 - `createGateway` method, and `createServer` `gateway` option
 - 0.7.0 - preserve prom metrics HELP and TYPE info, `readPromMetrics` callout function constructor option
 - 0.6.3 - publish the readme edits and package.json readme test

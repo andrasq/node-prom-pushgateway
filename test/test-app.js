@@ -151,10 +151,41 @@ module.exports = {
         'should return listen error if listen retry times out': function(t) {
             const server = new MockServer();
             server.listen = function() { server.emit('error', new Error('listen EADDRINUSE')) };
-            t.stubOnce(http, 'createServer', function(onRequest) { return server });
+            t.stubOnce(http, 'createServer', function() { return server });
             app.createServer({ port: 13337, listenTimeout: 205 }, function(err) {
                 t.ok(err);
                 t.contains(err.message, 'EADDRINUSE');
+                t.done();
+            })
+        },
+
+        'should listen on any an available port if config.anyPort': function(t) {
+            const server = app.createServer({ anyPort: true }, function(err, info) {
+                server.close();
+                t.ifError(err);
+                t.ok(info.port > 0);
+                t.ok(info.port != 13337);
+                t.done();
+            })
+        },
+
+        'should return error if config.anyPort finds no ports': function(t) {
+            const server = new MockServer();
+            server.listen = function() { server.emit('error', new Error('listen EADDRINUSE')) };
+            t.stubOnce(http, 'createServer', function() { return server });
+            const spy = t.spy(server, 'listen');
+
+            const startTime = Date.now();
+            app.createServer({ port: 13337, listenTimeout: 20, anyPort: true }, function(err, info) {
+                const finishTime = Date.now();
+                t.ok(finishTime >= startTime + 20);
+                t.ok(err);
+                t.contains(err.message, 'EADDRINUSE');
+                t.equal(spy.args[0][0], 13337);
+                t.equal(spy.args[1][0], 0);
+                t.equal(spy.args[2][0], 0);
+                t.equal(spy.args[3][0], 0);
+                t.equal(spy.args[spy.args.length - 1][0], 0);
                 t.done();
             })
         },
