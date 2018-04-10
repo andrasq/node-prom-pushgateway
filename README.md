@@ -53,6 +53,15 @@ available, or emits an `'error'` event on the server if there is a listener for 
         readPromMetrics: function() { return promClient.register.metrics() }
     });
 
+    // add to that our our own custom metrics
+    const myMetrics =
+        'my_metric_a 1\n' +
+        '# TYPE my_metric_b counter\n' +
+        'my_metric_b 2\n';
+    gw.gateway.ingestMetrics(myMetrics, function(err) {
+        // ingested
+    })
+
 ### gw.forkServer( config, [callback] )
 
 Run `createServer` in a child process, and return its port and pid back to the parent.
@@ -215,4 +224,4 @@ Todo
   Load journal on start, empty when scraped.
 - report metrics with a configurable separation gap to not split clusters of points
 - cache aggregates, not samples
-- new: expose a `close(cb)` method to close/kill the server
+- support `config.maxMetricAgeMs` to discard samples that are too old
