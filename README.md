@@ -105,7 +105,12 @@ Server options:
 Gateway options:
 - `labels` - hash of labels to add to reported metrics, default `{}` none
 - `readPromMetrics` - function to retrieve Prometheus metrics for inclusion in a
-  `/metrics` report, default none.
+  `/metrics` report, default none
+- `maxMetricAgeMs` - discard metrics that have been collected more than millisec
+  before being reported (ie, before when `reportMetrics()` runs)
+- `omitTimestamps` - omit collection timestamps from the output of `reportMetrics()`.
+  This makes prom-pushgateway report bare metrics, letting prometheus add its own
+  notion of the collection time.
 
 Other config settings are ignored.
 
@@ -123,6 +128,7 @@ Returns 200 OK status code and "OK" body, just to confirm that the service is up
 
 Push prometheus-pushgateway format stats to the gateway to be scraped by Prometheus.
 The stats are cached until collected by a call to /metrics.
+Metrics ingestion is done by `gateway.ingestMetrics()`.
 
     $ curl --data-binary @- << EOF http://localhots:9091/push
     metric1 11.5
@@ -150,6 +156,7 @@ The stats are cached until collected by a call to /metrics.
 ### POST /v1/custom
 
 Push legacy-Stackdriver format stats to the gateway to be scraped by Prometheus.
+Metrics ingestion is done by `gateway.ingestMetricsStackdriver()`.
 
     $ curl --data-binary @- << EOF http://localhost:9091/push/stackdriver
     { "timestamp":1519534800,
@@ -173,10 +180,10 @@ Push legacy-Stackdriver format stats to the gateway to be scraped by Prometheus.
 
 ### GET /metrics
 
-Endpoint used by Prometheus to scrape stats.  The cached stats are aggregated when reported
+Endpoint used by Prometheus to scrape stats. The cached stats are aggregated when reported
 (averaged, with the most recent timestamp).  Each call to /metrics will report all known metrics,
 whether or not new samples have been pushed since the last call.  If no new samples arrived, the
-last reported values are sent again.
+last reported values are sent again.  Aggretation and reporting is done by `gateway.reportMetrics()`.
 
     $ curl -v http://localhost:9091/metrics
     < HTTP/1.1 200 OK
@@ -197,6 +204,7 @@ last reported values are sent again.
 Change Log
 ----------
 
+- 0.10.0 - `config.omitTimestamps` and `config.maxMetricAgeMs` options, fix server options passing
 - 0.9.0 - `gateway.clear` method, `config.anyPort`, reuse HELP and TYPE attributes by metric name
 - 0.8.0 - `createGateway` method, and `createServer` `gateway` option
 - 0.7.0 - preserve prom metrics HELP and TYPE info, `readPromMetrics` callout function constructor option
@@ -224,4 +232,4 @@ Todo
   Load journal on start, empty when scraped.
 - report metrics with a configurable separation gap to not split clusters of points
 - cache aggregates, not samples
-- support `config.maxMetricAgeMs` to discard samples that are too old
+- support `config.omitTimestamps` to report just stats, without collection times
