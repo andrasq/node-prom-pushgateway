@@ -395,7 +395,7 @@ module.exports = {
                 const report = gw.reportMetrics().join('\n') + '\n';
                 t.contains(report, '# HELP metric1 custom metric\n# TYPE metric1 gauge\nmetric1{host="host-01"} 1 1500000001000\nmetric1{host="host-03"} 3 1500000003000\n\n');
                 t.contains(report, '# HELP metric2 custom metric\n# TYPE metric2 gauge\n');
-                t.contains(report, 'metric2{host="host-02"} 2 1500000002000\n\n');
+                t.contains(report, 'metric2{host="host-02"} 2 1500000002000\n');
                 t.done();
             })
         },
@@ -439,6 +439,21 @@ module.exports = {
             t.done();
         },
 
+        'should tolerate readPromMetrics errors': function(t) {
+            var promMetrics = "other metrics";
+            const readPromMetrics = function() { throw new Error('readPromMetrics error') };
+            const spy = t.spyOnce(readPromMetrics);
+            const gw = new Gateway({ readPromMetrics: spy, omitTimestamps: true });
+            gw.ingestMetrics('my_metric 123', function(err) {
+                t.ifError(err);
+                const report = gw.reportMetrics();
+                t.ok(spy.called);
+                t.equal(report.length, 3);
+                t.equal(report[2], 'my_metric 123');
+                t.done();
+            })
+        },
+
         'should report previous values': function(t) {
             const gw = this.gw;
             gw.ingestMetrics('metric1 1 1500000001000\n', function(err) {
@@ -447,11 +462,11 @@ module.exports = {
                 gw.ingestMetrics('metric2 2 1500000002000\n', function(err) {
                     t.ifError(err);
                     const report2 = gw.reportMetrics();
-                    t.equal(report1.length, 4);
+                    t.equal(report1.length, 3);
                     t.contains(report1[0], 'HELP');
                     t.contains(report1[1], 'TYPE');
                     t.contains(report1[2], 'metric1 1');
-                    t.equal(report2.length, 8);
+                    t.equal(report2.length, 7);
                     t.contains(report2[2], 'metric1 1');
                     t.contains(report2[6], 'metric2 2');
                     const report3 = gw.reportMetrics();
@@ -475,21 +490,21 @@ module.exports = {
             gw.ingestMetrics(metrics, function(err) {
                 t.ifError(err);
                 report = gw.reportMetrics();
-                t.equal(report.length, 4);
+                t.equal(report.length, 3);
                 t.contains(report[2], 'metric1{host="host-name-01"} 12.5 1500000021000');
 
             gw = new Gateway({ labels: { one: 1, } });
             gw.ingestMetrics(metrics, function(err) {
                 t.ifError(err);
                 report = gw.reportMetrics();
-                t.equal(report.length, 4);
+                t.equal(report.length, 3);
                 t.contains(report[2], 'metric1{one="1",host="host-name-01"} 12.5 1500000021000');
 
             gw = new Gateway({ labels: { a: 'one', b: 'two' } });
             gw.ingestMetrics(metrics, function(err) {
                 t.ifError(err);
                 report = gw.reportMetrics();
-                t.equal(report.length, 4);
+                t.equal(report.length, 3);
                 t.contains(report[2], 'metric1{a="one",b="two",host="host-name-01"} 12.5 1500000021000');
 
                 t.done();
