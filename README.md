@@ -4,18 +4,17 @@ prom-pushgateway
 [![Coverage Status](https://codecov.io/github/andrasq/node-prom-pushgateway/coverage.svg?branch=master)](https://codecov.io/github/andrasq/node-prom-pushgateway?branch=master)
 
 
-Embeddable aggregating Prometheus push gateway.
-
 `prom-pushgateway` is a tiny, low overhead embeddable nodejs nanoservice.  It can be
 included in other apps to expose a Promptheus compatible metrics endpoint, or can run
-standalone to provide an independent, Prometheus scrapable metrics push service.
+standalone to provide an independent, Prometheus scrapable, legacy Stackdriver compatible
+metrics push endpoint.
 
 Accepts stats from an app and presents them to be scraped by Prometheus.  Same-named
 stats are subsampled (averaged), which allows stats to be gathered more frequently
 than the scrape interval, and simplifies stats reporting from multi-threaded apps.
 
-Also implements a Stackdriver compatible push endpoint to simplify the upload of
-legacy Stackdriver metrics to Prometheus.
+Also implements a custom-gateway.stackdriver.com compatible push endpoint to simplify
+the upload of legacy Stackdriver metrics to Prometheus.
 
 The HELP and TYPE metrics attributes are remembered and associated with their metrics;
 untyped metrics are reported as gauges.  Use `/push` or `gateway.ingestMetrics()` to set
@@ -25,8 +24,35 @@ typing information with comment lines `# TYPE <name> <type>\n`.
 Overview
 --------
 
-The current process can listen for http requests to eg `/metrics` report the current
-metrics or `/push` upload more recent metrics:
+### Quickstart
+
+Export both prometheus default metrics and custom metrics from the current process,
+scrapable on port 39110 with an http GET request:
+
+    const promClient = require('prom-client');
+    promClient.collectDefaultMetrics();
+
+    const gw = require('prom-pushgateway).createServer({
+        port: 39110,
+        // include latest prom-client metrics in every /metrics report
+        readPromMetrics: () => promClient.register.metrics()
+    }, function(err) => {
+        // listening for /metrics requests
+    })
+
+    gw.gateway.ingestMetrics(
+        // add custom metrics to the /metrics report
+        "my_metric_a 1\n" +
+        "my_metric_b 2\n"
+    ), (err) => {
+        // metrics will be in the next /metrics report
+    })
+
+
+### Examples
+
+The current process can listen for http requests to eg `/metrics`, report the current
+metrics, or `/push`, upload more recent metrics:
 
     const options = {};
     const gw = require('prom-pushgateway').createServer(options, (err, info) => {
@@ -115,6 +141,7 @@ Api
 ### gw.createServer( config, [callback] )
 
 Create a pushgateway http server listening on `config.port`, and return the server.
+The server implements the http api described below.
 
 With a callback tries for up to `listenTimeout` ms to acquire and listen on the socket
 and returns any error or the port and process id of the server to its callback.
@@ -203,6 +230,7 @@ The gateway listens on the configured port (default 9091) for http requests.
 ### GET /healthcheck
 
 Returns 200 OK status code and "OK" body, just to confirm that the service is up.
+As a convenience, `GET /` is an alias for /healthcheck.
 
 ### POST /push
 
@@ -232,13 +260,21 @@ Metrics ingestion is done by `gateway.ingestMetrics()`.
     # TYPE metric3 counter
     metric3 7 1519998877123
 
-### POST /push/stackdriver
 ### POST /v1/custom
 
 Push legacy-Stackdriver format stats to the gateway to be scraped by Prometheus.
 Metrics ingestion is done by `gateway.ingestMetricsStackdriver()`.
 
-    $ curl --data-binary @- << EOF http://localhost:9091/push/stackdriver
+This functionality is also accessible by the alias `POST /push/stackdriver`.
+
+`/v1/custom` is legacy Stackdriver compatible; metrics formatted for stackdriver.com
+can be sent to Prometheus instead simply by setting the Stackdriver config host and
+port to prom-pushgateway /v1/custom (but protocol http, not https), and collecting
+prometheus metrics from prom-pushgateway /metrics.
+
+Example of how to upload Stackdriver metrics, and read them back in Prometheus format:
+
+    $ curl --data-binary @- << EOF http://localhost:9091/v1/custom
     { "timestamp":1519534800,
       "proto_version":1,
       "data":[
@@ -313,5 +349,4 @@ Todo
   Load journal on start, empty when scraped.
 - report metrics with a configurable separation gap to not split clusters of points
 - cache aggregates, not samples
-- support `config.omitTimestamps` to report just stats, without collection times
 - support a '/close' http endpoint
