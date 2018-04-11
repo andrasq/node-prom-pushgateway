@@ -301,15 +301,13 @@ module.exports = {
             t.done();
         },
 
-        'POST /v1/custom should call /push/stackdriver': function(t) {
+        'POST /v1/custom should call gateway.ingestMetricsStackdriver': function(t) {
             this.req.url = '/v1/custom';
             this.req.method = 'POST';
-            const spy = t.spy(app, 'processRequest');
-            app.processRequest(this.req, this.res, '{}', this.gateway);
-            t.equal(spy.callCount, 2);
-            t.deepEqual(spy.args[0], [this.req, this.res, '{}', this.gateway]);
-            t.deepEqual(spy.args[1], [this.req, this.res, '{}', this.gateway]);
-            t.equal(this.req.url, '/push/stackdriver');
+            const spy = t.spyOnce(this.gateway, 'ingestMetricsStackdriver');
+            app.processRequest(this.req, this.res, '{body contents}', this.gateway);
+            t.ok(spy.called);
+            t.equal(spy.args[0][0], '{body contents}');
             t.done();
         },
 
