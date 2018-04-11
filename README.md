@@ -6,7 +6,7 @@ prom-pushgateway
 
 Embeddable aggregating Prometheus push gateway.
 
-`prom-pushgateway` is a low overhead embeddable nodejs nanoservice.  It can be
+`prom-pushgateway` is a tiny, low overhead embeddable nodejs nanoservice.  It can be
 included in other apps to expose a Promptheus compatible metrics endpoint, or can run
 standalone to provide an independent, Prometheus scrapable metrics push service.
 
@@ -17,7 +17,7 @@ than the scrape interval, and simplifies stats reporting from multi-threaded app
 Also implements a Stackdriver compatible push endpoint to simplify the upload of
 legacy Stackdriver metrics to Prometheus.
 
-The HELP and TYPE attributes are remembered and associated with the named metrics;
+The HELP and TYPE metrics attributes are remembered and associated with their metrics;
 untyped metrics are reported as gauges.  Use `/push` or `gateway.ingestMetrics()` to set
 typing information with comment lines `# TYPE <name> <type>\n`.
 
@@ -25,11 +25,83 @@ typing information with comment lines `# TYPE <name> <type>\n`.
 Overview
 --------
 
-The gateway forks itself into a separate process and listens for requests.
+The current process can listen for http requests to eg `/metrics` report the current
+metrics or `/push` upload more recent metrics:
 
-    const gw = require('prom-pushgateway');
-    const worker = gw.forkServer({ port: 9091 }, (err, info) => {
+    const options = {};
+    const gw = require('prom-pushgateway').createServer(options, (err, info) => {
         // => { pid: 12345, port: 9091 }
+        // listening in current process, id 12345
+    })
+
+The gateway can also run as an embedded service by forking itself into a separate
+process.  This way it's better isolated from the primary service, but still offers the
+identical http functionality as when run in the same process:
+
+    const workerProcess = require('prom-pushgateway').forkServer({}, (err, info) => {
+        // => { pid: 23456, port: 9091 }
+        // listening in child process, id 23456
+    })
+
+Custom metrics can be pushed to a same-process gateway via `gw.gateway.ingestMetrics`.
+IngestMetrics accepts a prom-client format metrics report, including any HELP and TYPE
+annotations.  Metrics and annotations can be ingested in any order as long as both
+happen before metrics are reported.  The Prometheus convention is to report
+annotations immediately before the metric, and separate metrics with blank lines.
+
+    const customMetrics =
+        "my_metric_a 1\n" +
+        "my_metric_b 2\n" +
+        "# TYPE my_counter_c counter\n" +
+        "my_counter_c 3\n;
+    gw.gateway.ingestMetrics(customMetrics, (err) => {
+        // ingested typed metrics
+    })
+
+HELP and TYPE annotations can be ingested just once, they are remembered and always
+reported along with their stats:
+
+    const customMetricsTypes =
+        "# TYPE my_counter_c counter\n";
+    gw.gateway.ingestMetrics(customMetricsTypes, (err) => {
+        // ingested the types
+    })
+
+    const customMetrics =
+        "my_metric_a 1\n" +
+        "my_metric_b 2\n" +
+        "my_counter_c 4\n;
+    gw.gateway.ingestMetrics(customMetrics, (err) => {
+        // ingested the metrics
+    })
+
+A same-process gateway can ingest prom-client metrics automatically before
+reporting the current `/metrics`:
+
+    const promClient = require('prom-client');
+    promClient.collectDefaultMetrics();
+
+    const gw = require('prom-pushgateway).createServer({
+        readPromMetrics: () => promClient.register.metrics()
+    }, (err, info) => {
+        // => { pid: 12345, port: 9091 }
+    })
+
+Of course, metrics can always be pushed to a gateway via http, with the same semantics
+as `.ingestMetrics`.  Here's an example pushing the prom-client default metrics:
+
+    const promClient = require('prom-client');
+    promClient.collectDefaultMetrics();
+
+    const gw = require('prom-pushgateway').createServer({ port: 9091 }, (err, info) => {
+        // listening
+
+        const uri = { method: 'POST', host: 'localhost', port: 9091, path: '/push' };
+        const req = require('http').request(uri, function(res) {
+            // metrics ingested
+        })
+        req.write(promClient.register.metrics());
+        req.end();
     })
 
 
@@ -62,6 +134,8 @@ available, or emits an `'error'` event on the server if there is a listener for 
         // ingested
     })
 
+The `createServer` function returns an http server object.
+
 ### gw.forkServer( config, [callback] )
 
 Run `createServer` in a child process, and return its port and pid back to the parent.
@@ -71,6 +145,8 @@ exit soon after the parent exits.  On error the worker is killed.
 Internally `createServer` is called with a callback; if `forkServer` is called with a
 callback, errors and port/pid are returned to the caller, without a callback errors
 are rethrown.
+
+The `forkServer` function returns the forked worker child_process object.
 
 ### gw.createGateway( config )
 
