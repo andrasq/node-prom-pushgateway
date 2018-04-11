@@ -99,6 +99,10 @@ as `.ingestMetrics`.  Here's an example pushing the prom-client default metrics:
         const uri = { method: 'POST', host: 'localhost', port: 9091, path: '/push' };
         const req = require('http').request(uri, function(res) {
             // metrics ingested
+            res.on('data', (chunk) => {
+                // res.statusCode == 200
+                // chunk == 'OK\n'
+            })
         })
         req.write(promClient.register.metrics());
         req.end();
@@ -310,3 +314,4 @@ Todo
 - report metrics with a configurable separation gap to not split clusters of points
 - cache aggregates, not samples
 - support `config.omitTimestamps` to report just stats, without collection times
+- support a '/close' http endpoint

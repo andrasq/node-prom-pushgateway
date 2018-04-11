@@ -261,7 +261,15 @@ module.exports = {
         'GET /healthcheck should return 200 OK': function(t) {
             this.req.url = '/healthcheck';
             this.req.method = 'GET';
-            app.processRequest(this.req, this.res, '/healthcheck', this.gateway);
+            app.processRequest(this.req, this.res, '', this.gateway);
+            t.deepEqual(this.res.calls, [ ['writeHead', 200, undefined], ['end', 'OK\n'] ]);
+            t.done();
+        },
+
+        'GET / should return 200 OK': function(t) {
+            this.req.url = '/';
+            this.req.method = 'GET';
+            app.processRequest(this.req, this.res, '', this.gateway);
             t.deepEqual(this.res.calls, [ ['writeHead', 200, undefined], ['end', 'OK\n'] ]);
             t.done();
         },
