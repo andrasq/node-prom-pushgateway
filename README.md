@@ -26,8 +26,8 @@ Overview
 
 ### Quickstart
 
-Export both prometheus default metrics and custom metrics from the current process,
-scrapable on port 39110 with an http GET request:
+Simple way to export both prometheus default metrics and custom metrics from the
+current process, scrapable on port 39110 with an http GET request:
 
     const promClient = require('prom-client');
     promClient.collectDefaultMetrics();
@@ -36,7 +36,7 @@ scrapable on port 39110 with an http GET request:
         port: 39110,
         // include latest prom-client metrics in every /metrics report
         readPromMetrics: () => promClient.register.metrics()
-    }, function(err) => {
+    }, (err) => {
         // listening for /metrics requests
     })
 
@@ -45,7 +45,7 @@ scrapable on port 39110 with an http GET request:
         "my_metric_a 1\n" +
         "my_metric_b 2\n"
     ), (err) => {
-        // metrics will be in the next /metrics report
+        // metrics will be part of the next /metrics report
     })
 
 
@@ -212,7 +212,8 @@ Server options:
 Gateway options:
 - `labels` - hash of labels to add to reported metrics, default `{}` none
 - `readPromMetrics` - function to retrieve Prometheus metrics for inclusion in a
-  `/metrics` report, default none
+  `/metrics` report, default none.  The prom metrics are read every time
+  immediately before preparing the /metrics report.
 - `maxMetricAgeMs` - discard metrics that have been collected more than millisec
   before being reported (ie, before when `reportMetrics()` runs)
 - `omitTimestamps` - omit collection timestamps from the output of `reportMetrics()`.
@@ -350,3 +351,5 @@ Todo
 - report metrics with a configurable separation gap to not split clusters of points
 - cache aggregates, not samples
 - support a '/close' http endpoint
+- support `/job/<jobname>/instance/<instanceid>` push endpoint, and label the metrics
+- support `/job/<jobname>` push endpoint where instanceid = req.connection.remoteAddress
