@@ -203,7 +203,7 @@ Server options:
 - `verbose` - whether to log service start/stop messages, default false
 - `listenTimeout` - how long to retry to listen() on the configured socket
   before giving up
-- `gateway` - use the proviced Gateway object instead of creating a new one.
+- `gateway` - use the provided Gateway object instead of creating a new one.
   This option is ignored by `forkServer`.
 - `anyPort` - if unable to listen on `port`, listen on any available port (port 0).
   `createServer` returns the port the server is listening on.  If both `port` and
