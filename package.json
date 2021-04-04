@@ -1,21 +1,21 @@
 {
   "name": "prom-pushgateway",
-  "description": "embeddable aggregating stackdriver compatible prometheus push gateway",
   "version": "0.10.2",
+  "description": "embeddable aggregating stackdriver compatible prometheus push gateway",
   "keywords": [ "prometheus", "monitoring", "metrics", "push", "aggregating", "stackdriver" ],
-  "author": "Andras",
   "license": "Apache-2.0",
+  "author": "Andras",
+
   "repository": "https://github.com/andrasq/node-prom-pushgateway/#readme",
-  "readme": "https://github.com/andrasq/node-prom-pushgateway/#readme",
-  "engines": {
-    "node": ">=4"
-  },
+  "readme": "see README.md",
+  "engines": { "node": ">=0.7" },
 
   "dependencies": {
   },
   "devDependencies": {
     "qnit": "0.22.0"
   },
+
   "scripts": {
     "test": "qnit test",
     "coverage": "nyc --reporter lcov --reporter text npm test",
