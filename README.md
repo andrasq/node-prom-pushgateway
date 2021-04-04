@@ -321,6 +321,7 @@ last reported values are sent again.  Aggretation and reporting is done by `gate
 Change Log
 ----------
 
+- 0.10.2 - fix sort order to pass tests with newer node, make also work with older node
 - 0.10.1 - tolerate exceptions thrown by `readPromMetrics`, omit trailing blank line from reportMetrics
 - 0.10.0 - `config.omitTimestamps` and `config.maxMetricAgeMs` options, fix server options passing
 - 0.9.0 - `gateway.clear` method, `config.anyPort`, reuse HELP and TYPE attributes by metric name
