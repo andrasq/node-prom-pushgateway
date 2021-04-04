@@ -359,7 +359,7 @@ module.exports = {
 
         'should discard old samples': function(t) {
             const gw = new Gateway({ omitTimestamps: true, maxMetricAgeMs: 1000 });
-            t.stub(gw, 'getTimestamp', () => 1500000003000);
+            t.stub(gw, 'getTimestamp', function() { return 1500000003000 });
             gw.ingestMetrics(this.metrics, function(err) {
                 t.ifError(err);
                 const report = gw.reportMetrics();

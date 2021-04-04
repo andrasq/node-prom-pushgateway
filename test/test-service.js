@@ -72,7 +72,7 @@ module.exports = {
                 journalFilename: 'TBD',
                 labels: { a: 11 },
                 listenTimeout: 12,
-                readPromMetrics: () => '',
+                readPromMetrics: function() { return '' },
                 gateway: null,
                 anyPort: true,
                 maxMetricAgeMs: 12,
