@@ -178,6 +178,7 @@ module.exports = {
             var startTime = Date.now();
             app.createServer({ port: 13337, listenTimeout: 20, anyPort: true }, function(err, info) {
                 var finishTime = Date.now();
+                // TODO: node-v0.8 does not honor the timeout
                 t.ok(finishTime >= startTime + 20);
                 t.ok(err);
                 t.contains(err.message, 'EADDRINUSE');
