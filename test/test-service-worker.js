@@ -16,8 +16,8 @@
 
 'use strict';
 
-const Path = require('path');
-const app = require('../lib/app');
+var Path = require('path');
+var app = require('../lib/app');
 
 module.exports = {
     afterEach: function(done) {
@@ -29,8 +29,8 @@ module.exports = {
 
     'script should start the service and listen': function(t) {
         var message;
-        const spySend = t.stubOnce(process, 'send', function(m) { message = m });
-        const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
+        var spySend = t.stubOnce(process, 'send', function(m) { message = m });
+        var spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
 
         unrequire('../lib/service-worker.js');
         require('../lib/service-worker.js');
@@ -47,8 +47,8 @@ module.exports = {
 
     'script should ignore irrelevant message': function(t) {
         var message;
-        const spySend = t.stub(process, 'send', function(m) { message = m });
-        const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
+        var spySend = t.stub(process, 'send', function(m) { message = m });
+        var spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
 
         unrequire('../lib/service-worker.js');
         require('../lib/service-worker.js');
@@ -67,9 +67,9 @@ module.exports = {
 
     'script should return createServer error': function(t) {
         var message;
-        const error = new Error('createServer error');
-        const spySend = t.stubOnce(process, 'send', function(m) { message = m });
-        const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(error) });
+        var error = new Error('createServer error');
+        var spySend = t.stubOnce(process, 'send', function(m) { message = m });
+        var spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(error) });
 
         unrequire('../lib/service-worker.js');
         require('../lib/service-worker.js');
@@ -83,9 +83,9 @@ module.exports = {
 
     'script should return error if createServer throws': function(t) {
         var message;
-        const error = new Error('createServer exception');
-        const spySend = t.stubOnce(process, 'send', function(m) { message = m });
-        const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { throw error });
+        var error = new Error('createServer exception');
+        var spySend = t.stubOnce(process, 'send', function(m) { message = m });
+        var spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { throw error });
 
         unrequire('../lib/service-worker.js');
         require('../lib/service-worker.js');
@@ -98,8 +98,8 @@ module.exports = {
     },
 
     'script should kill self on disconnect': function(t) {
-        const spyKill = t.stubOnce(process, 'kill');
-        const spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
+        var spyKill = t.stubOnce(process, 'kill');
+        var spyCreate = t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
 
         unrequire('../lib/service-worker.js');
         require('../lib/service-worker.js');
@@ -113,7 +113,7 @@ module.exports = {
     },
 
     'script should delay exiting on disconnect for a little while': function(t) {
-        const clock = t.mockTimers();
+        var clock = t.mockTimers();
         t.stubOnce(app, 'createServer', function(config, cb) { return cb(null, { port: 13337, pid: 123456 }) });
 
         unrequire('../lib/service-worker.js');

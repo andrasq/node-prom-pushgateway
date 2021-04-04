@@ -16,12 +16,12 @@
 
 'use strict';
 
-const net = require('net');
-const events = require('events');
-const child_process = require('child_process');
-const app = require('../lib/app');
-const serv = require('../lib/service');
-const Gateway = require('../lib/gateway');
+var net = require('net');
+var events = require('events');
+var child_process = require('child_process');
+var app = require('../lib/app');
+var serv = require('../lib/service');
+var Gateway = require('../lib/gateway');
 
 module.exports = {
     'should export expected functions': function(t) {
@@ -33,12 +33,12 @@ module.exports = {
 
     'createServer': {
         'should listen on configured port': function(t) {
-            const server = serv.createServer({ port: 13337 }, function(err, info) {
+            var server = serv.createServer({ port: 13337 }, function(err, info) {
                 t.ifError(err);
                 t.equal(info.pid, process.pid);
                 t.equal(info.port, 13337);
                 // connect must not throw
-                const sock = new net.Socket();
+                var sock = new net.Socket();
                 sock.connect(13337, function() {
                     sock.end();
                     server.close(function(){
@@ -49,15 +49,15 @@ module.exports = {
         },
 
         'should createServer without a callback': function(t) {
-            const spy = t.stubOnce(app, 'createServer', function(opts, cb) { cb(null, { port: opts.port, pid: 12345 }) });
-            const server = serv.createServer({ port: 13338 });
+            var spy = t.stubOnce(app, 'createServer', function(opts, cb) { cb(null, { port: opts.port, pid: 12345 }) });
+            var server = serv.createServer({ port: 13338 });
             t.ok(spy.called);
             t.contains(spy.args[0][0], { port: 13338, labels: {} });
             t.done();
         },
 
         'should expose gateway': function(t) {
-            const server = serv.createServer({ port: 13337 }, function(err) {
+            var server = serv.createServer({ port: 13337 }, function(err) {
                 t.ifError(err);
                 server.close();
                 t.ok(server.gateway instanceof Gateway);
@@ -66,7 +66,7 @@ module.exports = {
         },
 
         'should pass valid options to server and gateway': function(t) {
-            const options = {
+            var options = {
                 port: 0,
                 verbose: 10,
                 journalFilename: 'TBD',
@@ -78,7 +78,7 @@ module.exports = {
                 maxMetricAgeMs: 12,
                 omitTimestamps: 23,
             };
-            const server = serv.createServer(options, function(err, info) {
+            var server = serv.createServer(options, function(err, info) {
                 t.ifError(err);
                 server.close();
 
@@ -94,8 +94,8 @@ module.exports = {
         },
 
         'should use provided gateway': function(t) {
-            const gw = {};
-            const server = serv.createServer({ port: 13337, gateway: gw }, function(err) {
+            var gw = {};
+            var server = serv.createServer({ port: 13337, gateway: gw }, function(err) {
                 t.ifError(err);
                 server.close();
                 t.equal(server.gateway, gw);
@@ -104,7 +104,7 @@ module.exports = {
         },
 
         'should assemble and pass journalFilename': function(t) {
-            const spy = t.stub(app, 'createServer', function(){});
+            var spy = t.stub(app, 'createServer', function(){});
             serv.createServer({ port: 123, journalFilename: '/logs/test-metrics.jrn' });
             serv.createServer({ port: 1234, logDir: '.', journalName: 'test-metrics.jrn' });
             t.ok(spy.called);
@@ -117,8 +117,8 @@ module.exports = {
         'verbose mode should write startup message': function(t) {
             var output = "";
             t.stubOnce(app, 'createServer', function(opts, cb) { cb(null, { port: opts.port, pid: 12345 }) });
-            const spy = t.stub(process.stdout, 'write', function(chunk) { output += chunk });
-            const server = serv.createServer({ port: 9091, verbose: true }, function(err, info) {
+            var spy = t.stub(process.stdout, 'write', function(chunk) { output += chunk });
+            var server = serv.createServer({ port: 9091, verbose: true }, function(err, info) {
                 spy.restore();
                 t.ifError(err);
                 t.contains(output, 'Starting');
@@ -130,8 +130,8 @@ module.exports = {
         'verbose mode should write startup error': function(t) {
             var output = "";
             t.stubOnce(app, 'createServer', function(opts, cb) { cb(new Error('listen EADDRINUSE')) });
-            const spy = t.stub(process.stdout, 'write', function(chunk) { output += chunk });
-            const server = serv.createServer({ port: 9091, verbose: true }, function(err, info) {
+            var spy = t.stub(process.stdout, 'write', function(chunk) { output += chunk });
+            var server = serv.createServer({ port: 9091, verbose: true }, function(err, info) {
                 spy.restore();
                 t.ok(err);
                 t.contains(output, 'Starting');
@@ -143,8 +143,8 @@ module.exports = {
 
     'forkServer': {
         'should fork a worker process': function(t) {
-            const proc = { send: function(){}, on: function(){} };
-            const spy = t.stubOnce(child_process, 'fork', function(){ return proc });
+            var proc = { send: function(){}, on: function(){} };
+            var spy = t.stubOnce(child_process, 'fork', function(){ return proc });
             serv.forkServer({});
             t.ok(spy.called);
             t.equal(spy.args[0][0], require.resolve('../lib/service-worker.js'));
@@ -152,9 +152,9 @@ module.exports = {
         },
 
         'should send the worker a start message': function(t) {
-            const ee = new events.EventEmitter();
+            var ee = new events.EventEmitter();
             t.stubOnce(child_process, 'fork', function(){ return ee });
-            const spy = t.stub(ee, 'send', function(){ ee.emit('message', { n: 'ready', m: {pid: 11111, port: 123} }) });
+            var spy = t.stub(ee, 'send', function(){ ee.emit('message', { n: 'ready', m: {pid: 11111, port: 123} }) });
             serv.forkServer({ port: 123, verbose: 2 });
             t.ok(spy.called);
             t.equal(spy.args[0][0].n, 'createServer');
@@ -163,7 +163,7 @@ module.exports = {
         },
 
         'should return child worker': function(t) {
-            const proc = { send: function(){}, on: function(){} };
+            var proc = { send: function(){}, on: function(){} };
             t.stubOnce(child_process, 'fork', function(){ return proc });
             t.equal(serv.forkServer({}), proc);
             t.done();
@@ -181,14 +181,14 @@ module.exports = {
 
         'errors': {
             'should throw on fork error without callback': function(t) {
-                const err = new Error('fork error');
+                var err = new Error('fork error');
                 t.stubOnce(child_process, 'fork', function(){ throw err });
                 t.throws(function(){ serv.forkServer({}) }, /fork error/);
                 t.done();
             },
 
             'should return fork error to callback': function(t) {
-                const err = new Error('fork error');
+                var err = new Error('fork error');
                 t.stubOnce(child_process, 'fork', function(){ throw err });
                 serv.forkServer({}, function(err2, info) {
                     t.ok(err2);
@@ -198,7 +198,7 @@ module.exports = {
             },
 
             'should wait for worker ready and ignore irrelevant and duplicate messages': function(t) {
-                const ee = new events.EventEmitter();
+                var ee = new events.EventEmitter();
                 t.stub(ee, 'send');
                 setTimeout(function() { ee.emit('message') }, 5);
                 setTimeout(function() { ee.emit('message', { x: 1 }) }, 10);
@@ -215,7 +215,7 @@ module.exports = {
             },
 
             'should return on worker startup error': function(t) {
-                const ee = new events.EventEmitter();
+                var ee = new events.EventEmitter();
                 ee.send = function(m) { setTimeout(function(){ ee.emit('message', { n: 'error', m: { worker: 'error' } }) }, 10) };
                 t.stubOnce(child_process, 'fork', function(){ return ee });
                 serv.forkServer({}, function(err, ret) {

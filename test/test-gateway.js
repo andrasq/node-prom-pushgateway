@@ -16,7 +16,7 @@
 
 'use strict';
 
-const Gateway = require('../lib/gateway');
+var Gateway = require('../lib/gateway');
 
 module.exports = {
     beforeEach: function(done) {
@@ -55,8 +55,8 @@ module.exports = {
 
     'ingestMetrics': {
         'should parse metrics lines': function(t) {
-            const self = this;
-            const spy = t.spyOnce(this.gw, 'parseMetricsLines');
+            var self = this;
+            var spy = t.spyOnce(this.gw, 'parseMetricsLines');
             this.gw.ingestMetrics('metric1 1\nmetric2 2\n', function(err, ret) {
                 t.ok(spy.called);
                 t.deepEqual(spy.args[0][0], ['metric1 1', 'metric2 2', '']);
@@ -68,9 +68,9 @@ module.exports = {
         },
 
         'should upload zero': function(t) {
-            const self = this;
-            const spyParse = t.spyOnce(this.gw, 'parseMetricsLines');
-            const contents = '\n\n';
+            var self = this;
+            var spyParse = t.spyOnce(this.gw, 'parseMetricsLines');
+            var contents = '\n\n';
             this.gw.ingestMetrics(contents, function(err) {
                 // spyParse is called with (contents, badLines, goodLines, samples)
                 // goodLines and badLines are populated by parseMetricsLines
@@ -80,9 +80,9 @@ module.exports = {
         },
 
         'should separate good lines and bad lines and complain about bad lines': function(t) {
-            const spyParse = t.spyOnce(this.gw, 'parseMetricsLines');
-            const spyWrite = t.stubOnce(process.stdout, 'write');
-            const contents =
+            var spyParse = t.spyOnce(this.gw, 'parseMetricsLines');
+            var spyWrite = t.stubOnce(process.stdout, 'write');
+            var contents =
                 'metric1\n' +
                 '1234\n' +
                 '# TYPE gauge\n' +
@@ -106,14 +106,14 @@ module.exports = {
         },
 
         'should remember help and type attributes until cleared': function(t) {
-            const gw = this.gw;
-            const typeMetrics =
+            var gw = this.gw;
+            var typeMetrics =
                 '# TYPE t1 my-type\n' +
                 '# HELP t2 my-help\n' +
                 '# TYPE t1 my-type-t1\n' +
                 '# TYPE t2 my-type-t2\n' +
                 '';
-            const valueMetrics =
+            var valueMetrics =
                 '\n' +
                 't1 1 1500000001000\n' +
                 '\n' +
@@ -124,11 +124,11 @@ module.exports = {
                 t.contains(gw.helpInfo, { t2: '# HELP t2 my-help' });
                 t.contains(gw.typeInfo, { t1: '# TYPE t1 my-type-t1' });
 
-                const report = gw.reportMetrics().join('\n') + '\n';
+                var report = gw.reportMetrics().join('\n') + '\n';
                 t.contains(report, '# HELP t1 custom metric\n# TYPE t1 my-type-t1\nt1 1 1500000001000\n');
                 t.contains(report, '# HELP t2 my-help\n# TYPE t2 my-type-t2\nt2 2 1500000002000\n');
 
-                const report2 = gw.reportMetrics().join('\n') + '\n';
+                var report2 = gw.reportMetrics().join('\n') + '\n';
                 t.contains(report2, '# HELP t1 custom metric\n# TYPE t1 my-type-t1\nt1 1 1500000001000\n');
                 t.contains(report2, '# HELP t2 my-help\n# TYPE t2 my-type-t2\nt2 2 1500000002000\n');
 
@@ -136,7 +136,7 @@ module.exports = {
                 gw.ingestMetrics(valueMetrics, function(err) {
                     t.ifError(err);
 
-                    const report3 = gw.reportMetrics().join('\n') + '\n';
+                    var report3 = gw.reportMetrics().join('\n') + '\n';
                     t.contains(report3, '# HELP t1 custom metric\n# TYPE t1 gauge\nt1 1 1500000001000\n');
                     t.contains(report3, '# HELP t2 custom metric\n# TYPE t2 gauge\nt2 2 1500000002000\n');
 
@@ -146,7 +146,7 @@ module.exports = {
         },
 
         'should associate remembered type attributes with labeled metric name': function(t) {
-            const gw = this.gw;
+            var gw = this.gw;
             gw.ingestMetrics('# TYPE t1 my-type', function(err) {
                 t.ifError(err);
                 gw.ingestMetrics('\n\nt2 23\n\nt1{x="1"} 12\n', function(err) {
@@ -158,28 +158,28 @@ module.exports = {
         },
 
         'should retain last metric value until cleared': function(t) {
-            const gw = this.gw;
-            const metrics =
+            var gw = this.gw;
+            var metrics =
                 't1 1 1500000001000\n' +
                 't2 2 1500000002000\n' +
                 '';
             gw.ingestMetrics(metrics, function(err) {
                 t.ifError(err);
-                const report = gw.reportMetrics().join('\n');
+                var report = gw.reportMetrics().join('\n');
                 t.contains(report, 't1 1 1500000001000');
                 t.contains(report, 't2 2 1500000002000');
 
-                const report2 = gw.reportMetrics().join('\n');
+                var report2 = gw.reportMetrics().join('\n');
                 t.contains(report2, 't1 1 1500000001000');
                 t.contains(report2, 't2 2 1500000002000');
 
                 gw.clear();
-                const report3 = gw.reportMetrics().join('\n');
+                var report3 = gw.reportMetrics().join('\n');
                 t.equal(report3, '');
 
                 gw.ingestMetrics('t3 3', function(err) {
                     t.ifError(err);
-                    const report4 = gw.reportMetrics().join('\n');
+                    var report4 = gw.reportMetrics().join('\n');
                     t.contains(report4, 't3 3');
 
                     t.done();
@@ -188,7 +188,7 @@ module.exports = {
         },
 
         'should discard samples if cleared': function(t) {
-            const gw = this.gw;
+            var gw = this.gw;
             gw.ingestMetrics('t1 1', function(err) {
                 gw.clear();
                 t.equal(gw.reportMetrics().join('\n'), '');
@@ -199,8 +199,8 @@ module.exports = {
 
     'ingestMetricsStackdriver': {
         'should throw on wrong protocol': function(t) {
-            const gw = this.gw;
-            const metrics = {
+            var gw = this.gw;
+            var metrics = {
                 timestamp: 2000000001,
                 proto_version: 2,
                 data: [
@@ -212,8 +212,8 @@ module.exports = {
         },
 
         'should convert and ingest metrics, retaining instance name': function(t) {
-            const gw = this.gw;
-            const metrics = {
+            var gw = this.gw;
+            var metrics = {
                 timestamp: 2111111111,
                 proto_version: 1,
                 data: [
@@ -257,8 +257,8 @@ module.exports = {
         },
 
         'should parse lines into samples': function(t) {
-            const lines = ['metric1_name 1.25 2000000001000', 'metric2_name{a="one",b="two",} 2.5'];
-            const now = Date.now();
+            var lines = ['metric1_name 1.25 2000000001000', 'metric2_name{a="one",b="two",} 2.5'];
+            var now = Date.now();
             this.gw.parseMetricsLines(lines, this.badLines, this.goodLines, this.samples);
             t.equal(this.samples.length, 2);
             t.contains(this.samples[0], { name: 'metric1_name', value: '1.25', ts: '2000000001000', id: 'metric1_name' });
@@ -268,8 +268,8 @@ module.exports = {
         },
 
         'should assign timestamp if not present': function(t) {
-            const lines = [ 'metric1 1', 'metric2 2' ];
-            const now = Date.now();
+            var lines = [ 'metric1 1', 'metric2 2' ];
+            var now = Date.now();
             this.gw.parseMetricsLines(lines, this.badLines, this.goodLines, this.samples);
             t.equal(this.samples.length, 2);
             t.ok(this.samples[0].ts >= now);
@@ -307,8 +307,8 @@ module.exports = {
         },
 
         'should sort samples into by time asc': function(t) {
-            const gw = this.gw;
-            const metrics =
+            var gw = this.gw;
+            var metrics =
                 'm1 1 2\n' +
                 'm2 2 1\n' +
                 'm3 3 4\n' +
@@ -316,19 +316,19 @@ module.exports = {
                 '';
             gw.ingestMetrics(metrics, function(err) {
                 t.ifError(err);
-                const report = gw.reportMetrics();
+                var report = gw.reportMetrics();
                 t.contains(report, ['m2 2 1', 'm1 1 2', 'm4 4 3',  'm3 3 4']);
                 t.done();
             })
         },
 
         'should consume samples from samples array': function(t) {
-            const gw = this.gw;
+            var gw = this.gw;
             gw.ingestMetrics(this.metrics, function(err) {
                 t.ifError(err);
-                const lenPre = gw.samples.length;
-                const report = gw.reportMetrics();
-                const lenPost = gw.samples.length;
+                var lenPre = gw.samples.length;
+                var report = gw.reportMetrics();
+                var lenPost = gw.samples.length;
                 t.equal(lenPre, 5);
                 t.ok(lenPre > lenPost, "should have fewer samples");
                 t.done();
@@ -336,10 +336,10 @@ module.exports = {
         },
 
         'should average samples with the same id': function(t) {
-            const gw = this.gw;
+            var gw = this.gw;
             gw.ingestMetrics(this.metrics, function(err) {
                 t.ifError(err);
-                const report = gw.reportMetrics();
+                var report = gw.reportMetrics();
                 t.contains(report, 'metric1 1.1 1500000002000');
                 t.contains(report, 'metric2 2.5 1500000003000');
                 t.done();
@@ -347,10 +347,10 @@ module.exports = {
         },
 
         'should honor omitTimestamps': function(t) {
-            const gw = new Gateway({ omitTimestamps: true, maxMetricAgeMs: Infinity });
+            var gw = new Gateway({ omitTimestamps: true, maxMetricAgeMs: Infinity });
             gw.ingestMetrics(this.metrics, function(err) {
                 t.ifError(err);
-                const report = gw.reportMetrics();
+                var report = gw.reportMetrics();
                 t.contains(report, 'metric1 1.1');
                 t.contains(report, 'metric2 2.5');
                 t.done();
@@ -358,11 +358,11 @@ module.exports = {
         },
 
         'should discard old samples': function(t) {
-            const gw = new Gateway({ omitTimestamps: true, maxMetricAgeMs: 1000 });
+            var gw = new Gateway({ omitTimestamps: true, maxMetricAgeMs: 1000 });
             t.stub(gw, 'getTimestamp', function() { return 1500000003000 });
             gw.ingestMetrics(this.metrics, function(err) {
                 t.ifError(err);
-                const report = gw.reportMetrics();
+                var report = gw.reportMetrics();
                 t.contains(report, 'metric1 1');
                 t.contains(report, 'metric2 2.5');
                 t.contains(report, 'metric3{name="value"} 3');
@@ -371,11 +371,11 @@ module.exports = {
         },
 
         'should report metrics with most recent timestamp': function(t) {
-            const start = Date.now();
-            const gw = this.gw;
+            var start = Date.now();
+            var gw = this.gw;
             gw.ingestMetrics(this.metrics, function(err) {
                 t.ifError(err);
-                const report = gw.reportMetrics();
+                var report = gw.reportMetrics();
                 t.contains(report, 'metric1 1.1 1500000002000');
                 t.contains(report, 'metric2 2.5 1500000003000');
                 t.ok('metric3{name="value"} 3 ' + start <= report[10] && report[10] <= 'metric3{name="value"} 3 ' + Date.now());
@@ -384,15 +384,15 @@ module.exports = {
         },
 
         'should group same-named metrics': function(t) {
-            const gw = this.gw;
-            const metrics =
+            var gw = this.gw;
+            var metrics =
                 'metric1{host="host-01"} 1 1500000001000\n' +
                 'metric2{host="host-02"} 2 1500000002000\n' +
                 'metric1{host="host-03"} 3 1500000003000\n' +
                 '';
             gw.ingestMetrics(metrics, function(err) {
                 t.ifError(err);
-                const report = gw.reportMetrics().join('\n') + '\n';
+                var report = gw.reportMetrics().join('\n') + '\n';
                 t.contains(report, '# HELP metric1 custom metric\n# TYPE metric1 gauge\nmetric1{host="host-01"} 1 1500000001000\nmetric1{host="host-03"} 3 1500000003000\n\n');
                 t.contains(report, '# HELP metric2 custom metric\n# TYPE metric2 gauge\n');
                 t.contains(report, 'metric2{host="host-02"} 2 1500000002000\n');
@@ -401,8 +401,8 @@ module.exports = {
         },
 
         'should preserve prom HELP and TYPE': function(t) {
-            const gw = this.gw;
-            const metrics =
+            var gw = this.gw;
+            var metrics =
                 'metric1 1 1500000001000\n' +
                 '\n' +
                 '# HELP metric2 my metric\n' +
@@ -418,7 +418,7 @@ module.exports = {
                 '';
             gw.ingestMetrics(metrics, function(err) {
                 t.ifError(err);
-                const report = gw.reportMetrics().join('\n') + '\n';
+                var report = gw.reportMetrics().join('\n') + '\n';
                 t.contains(report, '# HELP metric1 custom metric\n# TYPE metric1 gauge\nmetric1 1 1500000001000\n');
                 t.contains(report, '# HELP metric2 my metric\n# TYPE metric2 my-type\nmetric2{a="1"} 1');
                 t.contains(report, '# HELP metric3 my other metric\n# TYPE metric3 my-other-type\nmetric3{b="1"} 3 1500000003000');
@@ -430,8 +430,8 @@ module.exports = {
         'should include readPromMetrics() values': function(t) {
             var called;
             var promMetrics = "other metrics";
-            const gw = new Gateway({ readPromMetrics: function() { called = true; return promMetrics } });
-            const spyIngest = t.spyOnce(gw, 'ingestMetrics');
+            var gw = new Gateway({ readPromMetrics: function() { called = true; return promMetrics } });
+            var spyIngest = t.spyOnce(gw, 'ingestMetrics');
             gw.reportMetrics();
             t.ok(called);
             t.ok(spyIngest.called);
@@ -441,12 +441,12 @@ module.exports = {
 
         'should tolerate readPromMetrics errors': function(t) {
             var promMetrics = "other metrics";
-            const readPromMetrics = function() { throw new Error('readPromMetrics error') };
-            const spy = t.spyOnce(readPromMetrics);
-            const gw = new Gateway({ readPromMetrics: spy, omitTimestamps: true });
+            var readPromMetrics = function() { throw new Error('readPromMetrics error') };
+            var spy = t.spyOnce(readPromMetrics);
+            var gw = new Gateway({ readPromMetrics: spy, omitTimestamps: true });
             gw.ingestMetrics('my_metric 123', function(err) {
                 t.ifError(err);
-                const report = gw.reportMetrics();
+                var report = gw.reportMetrics();
                 t.ok(spy.called);
                 t.equal(report.length, 3);
                 t.equal(report[2], 'my_metric 123');
@@ -455,13 +455,13 @@ module.exports = {
         },
 
         'should report previous values': function(t) {
-            const gw = this.gw;
+            var gw = this.gw;
             gw.ingestMetrics('metric1 1 1500000001000\n', function(err) {
                 t.ifError(err);
-                const report1 = gw.reportMetrics();
+                var report1 = gw.reportMetrics();
                 gw.ingestMetrics('metric2 2 1500000002000\n', function(err) {
                     t.ifError(err);
-                    const report2 = gw.reportMetrics();
+                    var report2 = gw.reportMetrics();
                     t.equal(report1.length, 3);
                     t.contains(report1[0], 'HELP');
                     t.contains(report1[1], 'TYPE');
@@ -469,7 +469,7 @@ module.exports = {
                     t.equal(report2.length, 7);
                     t.contains(report2[2], 'metric1 1');
                     t.contains(report2[6], 'metric2 2');
-                    const report3 = gw.reportMetrics();
+                    var report3 = gw.reportMetrics();
                     t.deepEqual(report3, report2);
                     t.done();
                 })
@@ -477,7 +477,7 @@ module.exports = {
         },
 
         'should merge configured labels with metrics labels': function(t) {
-            const metrics = 'metric1{host="host-name-01"} 11.5 1500000001000\n' + 'metric1{host="host-name-01"} 13.5 1500000021000\n';
+            var metrics = 'metric1{host="host-name-01"} 11.5 1500000001000\n' + 'metric1{host="host-name-01"} 13.5 1500000021000\n';
             var gw, report;
 
             gw = new Gateway({ labels: { host: 'host-02' } });

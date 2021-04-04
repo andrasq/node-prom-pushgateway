@@ -16,10 +16,10 @@
 
 'use strict';
 
-const events = require('events');
-const util = require('util');
-const http = require('http');
-const app = require('../lib/app');
+var events = require('events');
+var util = require('util');
+var http = require('http');
+var app = require('../lib/app');
 
 module.exports = {
     'app': {
@@ -36,7 +36,7 @@ module.exports = {
         },
 
         'should set statusCode and debugMessage': function(t) {
-            const err = new app.HttpError(404, 'zilch');
+            var err = new app.HttpError(404, 'zilch');
             t.equal(err.statusCode, 404);
             t.equal(err.debugMessage, 'zilch');
             t.done();
@@ -119,9 +119,9 @@ module.exports = {
         },
 
         'should http.createServer and listen on port': function(t) {
-            const spy = t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
+            var spy = t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
             t.expect(5);
-            const server = app.createServer({ port: 12345 }, function(err, info) {
+            var server = app.createServer({ port: 12345 }, function(err, info) {
                 t.equal(info.port, 12345);
                 t.equal(info.pid, process.pid);
             })
@@ -132,9 +132,9 @@ module.exports = {
         },
 
         'should retry listen until listening': function(t) {
-            const server = new MockServer();
-            const startTime = Date.now();
-            const spyListen = t.stub(server, 'listen', function(port, cb){
+            var server = new MockServer();
+            var startTime = Date.now();
+            var spyListen = t.stub(server, 'listen', function(port, cb){
                 if (Date.now() < startTime + 200) return server.emit('error', new Error('listen EADDRINUSE'));
                 server.emit('listening');
                 cb();
@@ -149,7 +149,7 @@ module.exports = {
         },
 
         'should return listen error if listen retry times out': function(t) {
-            const server = new MockServer();
+            var server = new MockServer();
             server.listen = function() { server.emit('error', new Error('listen EADDRINUSE')) };
             t.stubOnce(http, 'createServer', function() { return server });
             app.createServer({ port: 13337, listenTimeout: 205 }, function(err) {
@@ -160,7 +160,7 @@ module.exports = {
         },
 
         'should listen on any an available port if config.anyPort': function(t) {
-            const server = app.createServer({ anyPort: true }, function(err, info) {
+            var server = app.createServer({ anyPort: true }, function(err, info) {
                 server.close();
                 t.ifError(err);
                 t.ok(info.port > 0);
@@ -170,14 +170,14 @@ module.exports = {
         },
 
         'should return error if config.anyPort finds no ports': function(t) {
-            const server = new MockServer();
+            var server = new MockServer();
             server.listen = function() { server.emit('error', new Error('listen EADDRINUSE')) };
             t.stubOnce(http, 'createServer', function() { return server });
-            const spy = t.spy(server, 'listen');
+            var spy = t.spy(server, 'listen');
 
-            const startTime = Date.now();
+            var startTime = Date.now();
             app.createServer({ port: 13337, listenTimeout: 20, anyPort: true }, function(err, info) {
-                const finishTime = Date.now();
+                var finishTime = Date.now();
                 t.ok(finishTime >= startTime + 20);
                 t.ok(err);
                 t.contains(err.message, 'EADDRINUSE');
@@ -191,7 +191,7 @@ module.exports = {
         },
 
         'should throw listen error without callback if cannot listen': function(t) {
-            const server = new MockServer();
+            var server = new MockServer();
             server.listen = function() { server.emit('error', new Error('listen EADDRINUSE')) };
             t.stubOnce(http, 'createServer', function(onRequest) { return server });
             t.throws(function(){ app.createServer({ port: 13337, listenTimeout: 100 }) }, /EADDRINUSE/);
@@ -200,10 +200,10 @@ module.exports = {
 
         'should call processRequest on on http request': function(t) {
             t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
-            const server = app.createServer({ port: 12345 });
-            const spy = t.spyOnce(app, 'processRequest');
-            const req = new MockReq('/healthcheck');
-            const res = new MockRes();
+            var server = app.createServer({ port: 12345 });
+            var spy = t.spyOnce(app, 'processRequest');
+            var req = new MockReq('/healthcheck');
+            var res = new MockRes();
             server.onRequest(req, res);
             req.end('test body');
             t.equal(spy.args[0][0], req);
@@ -215,7 +215,7 @@ module.exports = {
 
         'should process requests': function(t) {
             t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
-            const server = app.createServer({ port: 12345 });
+            var server = app.createServer({ port: 12345 });
             var req = new MockReq('/healthcheck');
             var res = new MockRes();
             server.onRequest(req, res);
@@ -227,9 +227,9 @@ module.exports = {
 
         'should process requests with the configured gateway': function(t) {
             t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
-            const gw = {};
-            const server = app.createServer({ port: 12345, gateway: gw });
-            const spy = t.spyOnce(app, 'processRequest');
+            var gw = {};
+            var server = app.createServer({ port: 12345, gateway: gw });
+            var spy = t.spyOnce(app, 'processRequest');
             var req = new MockReq('/healthcheck');
             var res = new MockRes();
             server.onRequest(req, res);
@@ -240,7 +240,7 @@ module.exports = {
 
         'should catch and return process exception': function(t) {
             t.stubOnce(http, 'createServer', function(onRequest) { return new MockServer(onRequest) });
-            const server = app.createServer({ port: 12345 });
+            var server = app.createServer({ port: 12345 });
             var req = new MockReq('/test/exception'), res = new MockRes();
             server.onRequest(req, res);
             req.end();
@@ -293,7 +293,7 @@ module.exports = {
         'POST /push/stackdriver should call gateway.ingestMetricsStackdriver': function(t) {
             this.req.url = '/push/stackdriver';
             this.req.method = 'POST';
-            const postData = JSON.stringify({ timestamp: 2000000001, proto_version: 1, data: [ { name: 'foo', value: 1 } ] });
+            var postData = JSON.stringify({ timestamp: 2000000001, proto_version: 1, data: [ { name: 'foo', value: 1 } ] });
             app.processRequest(this.req, this.res, postData, this.gateway);
             t.deepEqual(this.gateway.calls, [ ['ingestMetricsStackdriver', postData] ]);
             t.deepEqual(this.res.calls[0], ['writeHead', 200, undefined]);
@@ -304,7 +304,7 @@ module.exports = {
         'POST /v1/custom should call gateway.ingestMetricsStackdriver': function(t) {
             this.req.url = '/v1/custom';
             this.req.method = 'POST';
-            const spy = t.spyOnce(this.gateway, 'ingestMetricsStackdriver');
+            var spy = t.spyOnce(this.gateway, 'ingestMetricsStackdriver');
             app.processRequest(this.req, this.res, '{body contents}', this.gateway);
             t.ok(spy.called);
             t.equal(spy.args[0][0], '{body contents}');
@@ -313,7 +313,7 @@ module.exports = {
 
         'should throw 404 HttpError if call not routed': function(t) {
             this.req.url = '/notRouted';
-            const self = this;
+            var self = this;
             t.throws(function(){ app.processRequest(self.req, self.res, "body", self.gateway) }, /not routed/);
             t.throws(function(){ app.processRequest(self.req, self.res, "body", self.gateway) }, app.HttpError);
             t.done();
@@ -322,7 +322,7 @@ module.exports = {
 }
 
 function MockServer( onRequest ) {
-    const self = this;
+    var self = this;
     events.EventEmitter.call(this);
 
     this.onRequest = onRequest;
@@ -332,7 +332,7 @@ function MockServer( onRequest ) {
 util.inherits(MockServer, events.EventEmitter);
 
 function MockReq( url ) {
-    const self = this;
+    var self = this;
     events.EventEmitter.call(this);
 
     this.method = 'GET';
@@ -343,7 +343,7 @@ function MockReq( url ) {
 util.inherits(MockReq, events.EventEmitter);
 
 function MockRes( ) {
-    const self = this;
+    var self = this;
     this.calls = [];
 
     this.writeHead = function(code, headers) { self.calls.push(['writeHead', code, headers]) };
@@ -352,7 +352,7 @@ function MockRes( ) {
 }
 
 function MockGateway( ) {
-    const self = this;
+    var self = this;
     this.calls = [];
 
     this.reportMetrics = function() {
