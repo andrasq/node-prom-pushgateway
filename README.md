@@ -32,7 +32,7 @@ current process, scrapable on port 39110 with an http GET request:
     const promClient = require('prom-client');
     promClient.collectDefaultMetrics();
 
-    const gw = require('prom-pushgateway).createServer({
+    const gw = require('prom-pushgateway').createServer({
         port: 39110,
         // include latest prom-client metrics in every /metrics report
         readPromMetrics: () => promClient.register.metrics()
