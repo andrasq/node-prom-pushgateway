@@ -363,9 +363,20 @@ module.exports = {
             gw.ingestMetrics(this.metrics, function(err) {
                 t.ifError(err);
                 var report = gw.reportMetrics();
-                t.contains(report, 'metric1 1');
-                t.contains(report, 'metric2 2.5');
+                t.contains(report, 'metric1 1');        // the older value of 1.2 aged out
+                t.contains(report, 'metric2 2.5');      // still live values are averaged
                 t.contains(report, 'metric3{name="value"} 3');
+
+                t.stub(gw, 'getTimestamp', function() { return 1500000003500 });
+                report = gw.reportMetrics();
+                t.notContains(report, 'metric1');       // aged out
+                t.contains(report, 'metric2 2.5');      // still live
+                t.contains(report, 'metric3{name="value"} 3');
+
+                t.stub(gw, 'getTimestamp', function() { return 1500000004001 });
+                report = gw.reportMetrics();
+                t.equal(report, '');                    // all metrics aged out
+
                 t.done();
             })
         },

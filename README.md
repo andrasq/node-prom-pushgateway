@@ -5,7 +5,7 @@ prom-pushgateway
 
 
 `prom-pushgateway` is a tiny, low overhead embeddable nodejs nanoservice.  It can be
-included in other apps to expose a Promptheus compatible metrics endpoint, or can run
+included in other apps to expose a Prometheus compatible metrics endpoint, or can run
 standalone to provide an independent, Prometheus scrapable, legacy Stackdriver compatible
 metrics push endpoint.
 
@@ -236,7 +236,10 @@ As a convenience, `GET /` is an alias for /healthcheck.
 ### POST /push
 
 Push prometheus-pushgateway format stats to the gateway to be scraped by Prometheus.
-The stats are cached until collected by a call to /metrics.
+The stats are cached for collection by a call to /metrics.  Collected metrics are retained
+and reported again to allow reporting more frequently than metrics arrive, and duplicate
+metrics are averaged to allow reporting less frequently than metrics arrive.
+Metrics can be aged out with the `maxMetricAgeMs` option.
 Metrics ingestion is done by `gateway.ingestMetrics()`.
 
     $ curl --data-binary @- << EOF http://localhots:9091/push
