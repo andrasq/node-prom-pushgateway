@@ -152,7 +152,9 @@ module.exports = {
         },
 
         'should kill the worker if it signals error': function(t) {
-            var proc = Object.assign(new events.EventEmitter(), {pid: 987654, send: function(){}});
+            var proc = new events.EventEmitter();
+            proc.pid = 987654;
+            proc.send = function(){};
             t.stubOnce(child_process, 'fork', function(){ return proc });
             serv.forkServer({});
             var spy = t.spyOnce(process, 'kill');
