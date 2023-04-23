@@ -15,8 +15,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: 'npm'
-      - env:
-        NODE_ENV: test
       - name: tests
         run: |
           echo Installing and running unit tests.
