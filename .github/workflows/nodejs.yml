@@ -14,3 +14,5 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: echo AR: success
+      - run: npm install
+      - run: npm test
