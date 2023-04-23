@@ -21,6 +21,9 @@ var util = require('util');
 var http = require('http');
 var app = require('../lib/app');
 
+var allocBuf = eval('parseFloat(process.versions.node) > 6 ? Buffer.allocUnsafe : Buffer');
+var fromBuf = eval('parseFloat(process.versions.node) > 6 ? Buffer.from : Buffer');
+
 module.exports = {
     'app': {
         'should export createServer': function(t) {
@@ -52,7 +55,7 @@ module.exports = {
         'should return empty buffer': function(t) {
             app.readRequest(this.req, function(err, body) {
                 t.ok(Buffer.isBuffer(body));
-                t.deepEqual(body, new Buffer(0));
+                t.deepEqual(body, allocBuf(0));
                 t.done();
             })
             this.req.emit('end');
@@ -60,20 +63,20 @@ module.exports = {
 
         'should return chunk': function(t) {
             app.readRequest(this.req, function(err, body) {
-                t.deepEqual(body, new Buffer('test'));
+                t.deepEqual(body, fromBuf('test'));
                 t.done();
             })
-            this.req.emit('data', new Buffer('test'));
+            this.req.emit('data', fromBuf('test'));
             this.req.emit('end');
         },
 
         'should combine chunks': function(t) {
             app.readRequest(this.req, function(err, body) {
-                t.deepEqual(body, new Buffer('hello world.'));
+                t.deepEqual(body, fromBuf('hello world.'));
                 t.done();
             })
-            this.req.emit('data', new Buffer('hello '));
-            this.req.emit('data', new Buffer('world.'));
+            this.req.emit('data', fromBuf('hello '));
+            this.req.emit('data', fromBuf('world.'));
             this.req.end();
         },
     },
