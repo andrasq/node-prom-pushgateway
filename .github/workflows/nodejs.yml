@@ -9,13 +9,14 @@ jobs:
       matrix:
         node: [ '16.8.0' ]
     steps:
-      - uses: actions/checkout@v3
-      - name: nodejs ${{ matrix.node }}
+      - name: Checkout@v3
+        uses: actions/checkout@v3
+      - name: Setup-node@v3 nodejs ${{ matrix.node }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
           cache: 'npm'
-      - name: tests
+      - name: Run tests
         run: |
           echo Installing and running unit tests.
           npm install -g qnit npm@2.15.0
@@ -25,7 +26,7 @@ jobs:
           echo AR: `which -a nvm`
           npm test
       - if: ${{ matrix.node == '16.8.0' }}
-        name: coverage
+        name: Run coverage
         run: |
           # [ `node -v` = 'v16.8.0' ] || exit
           echo Checking code coverage.
