@@ -17,10 +17,14 @@ jobs:
       - run: npm install -g qnit npm@2.15.0
       - run: npm test
 
-      # - if: ${{ matrix.node == '5.8.0' }}
-      - run: test `node -v` = '5.8.0' || exit
-      - run: npm install -g nyc@8.4.0
-      - run: npm run coverage
-      - uses: coverallsapp/github-action@v1.1.2
+      - name: coverage
+        if: ${{ matrix.node == '5.8.0' }}
+        run: |
+          # test `node -v` = '5.8.0' || exit
+          npm install -g nyc@8.4.0
+          npm run coverage
+      - name: upload coverage
+        if: ${{ matrix.node == '5.8.0' }}
+        uses: coverallsapp/github-action@v1.1.2
         with:
           github-token: ${{ github.token }}
