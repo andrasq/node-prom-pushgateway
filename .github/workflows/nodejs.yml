@@ -12,8 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-      - run: |
-          echo "AR: success"
+          node-version: ${{ matrix.node }}
+      - run: echo "AR: installed" `node -v`
       - run: npm install
       - run: npm test
