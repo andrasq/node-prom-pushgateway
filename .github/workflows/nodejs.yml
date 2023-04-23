@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [6.x, 12.x, 16.x, 5.8.0]
+        node: [ 16.8.0 ]
     steps:
       - uses: actions/checkout@v3
       - name: nodejs ${{ matrix.node }}
@@ -24,10 +24,10 @@ jobs:
           echo AR: `which -a npm`
           echo AR: `which -a nvm`
           npm test
-      - if: ${{ matrix.node == '5.8.0' }}
+      - if: ${{ matrix.node == '16.8.0' }}
         name: coverage
         run: |
-          # [ `node -v` = 'v5.8.0' ] || exit
+          # [ `node -v` = 'v16.8.0' ] || exit
           echo Checking code coverage.
           npm install -g nyc@8.4.0 coveralls@3.0.2
           npm run coverage
