@@ -17,18 +17,17 @@ jobs:
           echo "AR: installed `node -v`"
       - run: npm install
       - run: npm install -g qnit npm@2.15.0
-      - run: |
-          echo "AR: `which -a qnit`"
-          echo "AR: `which -a npm`"
-          echo "AR: `/usr/local/bin/npm -v`" || true
-          echo "AR: `which -a nvm`"
       - run: npm test
 
       - if: ${{ matrix.node == '5.8.0' }}
-        name: Run coverage
+        name: Check code coverage
         run: |
           # [ `node -v` = 'v16.8.0' ] || exit
-          echo "Checking code coverage."
           npm install -g nyc@8.4.0 coveralls@3.0.2 > /dev/null
           npm run coverage
-          nyc report -r text-lcov | coveralls
+
+      - if: ${{ matrix.node == '5.8.0' }}
+        name: Report code coverage
+        uses: coverallsapp/github-action@v1.1.2
+        with:
+          github-token: ${{ github.token }}
