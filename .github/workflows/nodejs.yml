@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ 6.x, 10.x, 12.x, 16.x ]
+        node: [ 5.8.0, 6.x, 10.x, 12.x, 16.x ]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -20,5 +20,15 @@ jobs:
       - run: |
           echo "AR: `which -a qnit`"
           echo "AR: `which -a npm`"
+          echo "AR: `/usr/local/bin/npm -v`" || true
           echo "AR: `which -a nvm`"
       - run: npm test
+
+      - if: ${{ matrix.node == '5.8.0' }}
+        name: Run coverage
+        run: |
+          # [ `node -v` = 'v16.8.0' ] || exit
+          echo "Checking code coverage."
+          npm install -g nyc@8.4.0 coveralls@3.0.2 > /dev/null
+          npm run coverage
+          nyc report -r text-lcov | coveralls
