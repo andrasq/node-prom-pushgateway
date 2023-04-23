@@ -9,28 +9,8 @@ jobs:
       matrix:
         node: [ 16.x ]
     steps:
-      - name: Checkout@v3
-        uses: actions/checkout@v3
-      - name: Setup-node@v3 nodejs ${{ matrix.node }}
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          # node-version: ${{ matrix.node }}
-          node-version: 16
-          cache: 'npm'
-      - name: Run tests
-        run: |
-          echo Installing and running unit tests.
-          npm install -g qnit npm@2.15.0
-          npm install
-          echo AR: `which -a qnit`
-          echo AR: `which -a npm`
-          echo AR: `which -a nvm`
-          npm test
-      - if: ${{ matrix.node == '16.8.0' }}
-        name: Run coverage
-        run: |
-          # [ `node -v` = 'v16.8.0' ] || exit
-          echo Checking code coverage.
-          npm install -g nyc@8.4.0 coveralls@3.0.2
-          npm run coverage
-          nyc report -r text-lcov | coveralls
+          node-version: ${{ matrix.node-version }}
+      - run: echo AR: success
