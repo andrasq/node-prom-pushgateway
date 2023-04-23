@@ -2,35 +2,35 @@ name: nodejs ci
 on:
   push:
     branches: [ $default-branch ]
-  jobs:
-    build:
-      runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          node: [6.x, 12.x, 16.x, 5.8.0]
-      steps:
-        - uses: actions/checkout@v3
-        - name: nodejs ${{ matrix.node }}
-          uses: actions/setup-node@v3
-          with:
-            node-version: ${{ matrix.node }}
-            cache: 'npm'
-        - env:
-          NODE_ENV: test
-        - name: tests
-          run: |
-            echo Installing and running unit tests.
-            npm install -g qnit npm@2.15.0
-            npm install
-            echo AR: `which -a qnit`
-            echo AR: `which -a npm`
-            echo AR: `which -a nvm`
-            npm test
-        - if: ${{ matrix.node == '5.8.0' }}
-          name: coverage
-          run: |
-            # [ `node -v` = 'v5.8.0' ] || exit
-            echo Checking code coverage.
-            npm install -g nyc@8.4.0 coveralls@3.0.2
-            npm run coverage
-            nyc report -r text-lcov | coveralls
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [6.x, 12.x, 16.x, 5.8.0]
+    steps:
+      - uses: actions/checkout@v3
+      - name: nodejs ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+      - env:
+        NODE_ENV: test
+      - name: tests
+        run: |
+          echo Installing and running unit tests.
+          npm install -g qnit npm@2.15.0
+          npm install
+          echo AR: `which -a qnit`
+          echo AR: `which -a npm`
+          echo AR: `which -a nvm`
+          npm test
+      - if: ${{ matrix.node == '5.8.0' }}
+        name: coverage
+        run: |
+          # [ `node -v` = 'v5.8.0' ] || exit
+          echo Checking code coverage.
+          npm install -g nyc@8.4.0 coveralls@3.0.2
+          npm run coverage
+          nyc report -r text-lcov | coveralls
