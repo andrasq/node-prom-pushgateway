@@ -151,6 +151,17 @@ module.exports = {
             t.done();
         },
 
+        'should kill the worker if it signals error': function(t) {
+            var proc = Object.assign(new events.EventEmitter(), {pid: 987654, send: function(){}});
+            t.stubOnce(child_process, 'fork', function(){ return proc });
+            serv.forkServer({});
+            var spy = t.spyOnce(process, 'kill');
+            proc.emit('message', {n: 'error', err: new Error('mock error')});
+            t.ok(spy.called);
+            t.equal(spy.args[0][0], 987654);
+            t.done();
+        },
+
         'should send the worker a start message': function(t) {
             var ee = new events.EventEmitter();
             t.stubOnce(child_process, 'fork', function(){ return ee });
