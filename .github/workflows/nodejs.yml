@@ -13,21 +13,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - run: |
-          echo "AR: installed `node -v`"
       - run: npm install
       - run: npm install -g qnit npm@2.15.0
       - run: npm test
 
       - if: ${{ matrix.node == '5.8.0' }}
         name: Check code coverage
-        run: |
-          # [ `node -v` = 'v16.8.0' ] || exit
-          npm install -g nyc@8.4.0 coveralls@3.0.2 > /dev/null
-          npm run coverage
-
-      - if: ${{ matrix.node == '5.8.0' }}
-        name: Report code coverage
+        run: npm install -g nyc@8.4.0
+        run: npm run coverage
         uses: coverallsapp/github-action@v1.1.2
         with:
           github-token: ${{ github.token }}
