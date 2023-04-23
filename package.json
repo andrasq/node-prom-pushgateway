@@ -1,6 +1,6 @@
 {
   "name": "prom-pushgateway",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "description": "embeddable aggregating stackdriver compatible prometheus push gateway",
   "keywords": [ "prometheus", "monitoring", "metrics", "push", "aggregating", "stackdriver" ],
   "license": "Apache-2.0",
