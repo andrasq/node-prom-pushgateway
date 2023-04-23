@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ 10.x ]
+        node: [ 6.x, 10.x, 12.x, 16.x ]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -16,4 +16,9 @@ jobs:
       - run: |
           echo "AR: installed `node -v`"
       - run: npm install
+      - run: npm install -g qnit npm@2.15.0
+      - run: |
+          echo "AR: `which -a qnit`"
+          echo "AR: `which -a npm`"
+          echo "AR: `which -a nvm`"
       - run: npm test
