@@ -1,4 +1,4 @@
-name: nodejs ci
+name: build
 on:
   push:
     # branches: [ $default-branch, ar-test ]
